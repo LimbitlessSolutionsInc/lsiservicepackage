@@ -298,7 +298,7 @@ double calculateTotalWidth(List<NewOrder> orders, double weekWidth) {
                       hideCompletedOrders = value;
                     });
                   },
-                  activeColor: Theme.of(context).secondaryHeaderColor,
+                  activeThumbColor: Theme.of(context).secondaryHeaderColor,
                 ),
               ],
             ),
@@ -322,7 +322,7 @@ double calculateTotalWidth(List<NewOrder> orders, double weekWidth) {
                       showAllOrders = value;
                     });
                   },
-                  activeColor: Theme.of(context).secondaryHeaderColor,
+                  activeThumbColor: Theme.of(context).secondaryHeaderColor,
                 ),
               ],
             ),

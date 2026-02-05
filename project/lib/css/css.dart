@@ -112,7 +112,7 @@ class CSS{
     cardColor: Colors.grey[850],
     canvasColor: Colors.grey[900],
     splashColor: Colors.grey[900],
-    indicatorColor: Colors.grey[850],//Colors.orange[600],
+    tabBarTheme: TabBarThemeData(indicatorColor: Colors.grey[850]),//Colors.orange[600],
     shadowColor: Colors.black,//Colors.orange[600],
     hoverColor: Colors.orange[50],
 
@@ -232,7 +232,7 @@ class CSS{
     cardColor: Colors.grey[850],
     canvasColor: Colors.grey[900],
     splashColor: Colors.grey[900],
-    indicatorColor: Colors.grey[850],
+    tabBarTheme: TabBarThemeData(indicatorColor: Colors.grey[850]),
     shadowColor: Colors.black,//Colors.grey[750],
     hoverColor: Colors.grey[700],
 
@@ -357,7 +357,7 @@ class CSS{
     primaryColor: lightBlue,
     cardColor: const Color(0xfffdfdfd),
     canvasColor: const Color(0xffdddddd),
-    indicatorColor: Colors.white,
+    tabBarTheme: const TabBarThemeData(indicatorColor: Colors.white),
     splashColor: const Color(0xffeeeeee),
     shadowColor: Colors.grey[500],
     hoverColor: Colors.grey[350],
@@ -483,7 +483,7 @@ class CSS{
     cardColor: pastelYellow,
     canvasColor: sageGreen,
     splashColor: sageGreen,
-    indicatorColor: pastelYellow,
+    tabBarTheme: const TabBarThemeData(indicatorColor: pastelYellow),
     shadowColor: forestGreen,
     hoverColor: Colors.grey[100],
 
@@ -604,7 +604,7 @@ class CSS{
     cardColor: Colors.white,
     canvasColor: lightBlue,
     splashColor: lightGrey,
-    indicatorColor: Colors.white,
+    tabBarTheme: const TabBarThemeData(indicatorColor: Colors.white),
     shadowColor: darkBlue,
     hoverColor: Colors.grey[100],
 
@@ -724,7 +724,7 @@ class CSS{
     cardColor: Colors.pink[50],
     canvasColor: Colors.pink[100],
     splashColor: Colors.pink[100],
-    indicatorColor: Colors.pink[50],
+    tabBarTheme: TabBarThemeData(indicatorColor: Colors.pink[50]),
     shadowColor: Colors.pink[300],
     hoverColor: Colors.grey[100],
 

@@ -336,7 +336,7 @@ void deleteOrder(int index) async {
                       hideCompletedOrders = value;
                     });
                   },
-                  activeColor: Theme.of(context).secondaryHeaderColor,
+                  activeThumbColor: Theme.of(context).secondaryHeaderColor,
                 ),
               ],
             ),
@@ -360,7 +360,7 @@ void deleteOrder(int index) async {
                       showAllOrders = value;
                     });
                   },
-                  activeColor: Theme.of(context).secondaryHeaderColor,
+                  activeThumbColor: Theme.of(context).secondaryHeaderColor,
                 ),
               ],
             ),

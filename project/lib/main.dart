@@ -343,11 +343,11 @@ class CreateOrderPageState extends State<CreateOrderPage>
                       : currentTheme == CSS.darkTheme
                       ? Theme.of(context).unselectedWidgetColor
                       : currentTheme == CSS.mintTheme
-                      ? Theme.of(context).indicatorColor
+                      ? Theme.of(context).tabBarTheme.indicatorColor
                       : currentTheme == CSS.lsiTheme
                       ? Theme.of(context).splashColor
                       : currentTheme == CSS.pinkTheme
-                      ? Theme.of(context).indicatorColor
+                      ? Theme.of(context).tabBarTheme.indicatorColor
                       : Theme.of(context).splashColor,
                     borderRadius: BorderRadius.circular(8.0),
                     ),
@@ -395,11 +395,11 @@ class CreateOrderPageState extends State<CreateOrderPage>
                       : currentTheme == CSS.darkTheme
                       ? Theme.of(context).unselectedWidgetColor
                       : currentTheme == CSS.mintTheme
-                      ? Theme.of(context).indicatorColor
+                      ? Theme.of(context).tabBarTheme.indicatorColor
                       : currentTheme == CSS.lsiTheme
                       ? Theme.of(context).splashColor
                       : currentTheme == CSS.pinkTheme
-                      ? Theme.of(context).indicatorColor
+                      ? Theme.of(context).tabBarTheme.indicatorColor
                       : Theme.of(context).splashColor,
                     borderRadius: BorderRadius.circular(8.0),
                     ),
@@ -448,11 +448,11 @@ class CreateOrderPageState extends State<CreateOrderPage>
                       : currentTheme == CSS.darkTheme
                       ? Theme.of(context).unselectedWidgetColor
                       : currentTheme == CSS.mintTheme
-                      ? Theme.of(context).indicatorColor
+                      ? Theme.of(context).tabBarTheme.indicatorColor
                       : currentTheme == CSS.lsiTheme
                       ? Theme.of(context).splashColor
                       : currentTheme == CSS.pinkTheme
-                      ? Theme.of(context).indicatorColor
+                      ? Theme.of(context).tabBarTheme.indicatorColor
                       : Theme.of(context).splashColor,
                     borderRadius: BorderRadius.circular(8.0),
                     ),
@@ -503,11 +503,11 @@ class CreateOrderPageState extends State<CreateOrderPage>
                       : currentTheme == CSS.darkTheme
                       ? Theme.of(context).unselectedWidgetColor
                       : currentTheme == CSS.mintTheme
-                      ? Theme.of(context).indicatorColor
+                      ? Theme.of(context).tabBarTheme.indicatorColor
                       : currentTheme == CSS.lsiTheme
                       ? Theme.of(context).splashColor
                       : currentTheme == CSS.pinkTheme
-                      ? Theme.of(context).indicatorColor
+                      ? Theme.of(context).tabBarTheme.indicatorColor
                       : Theme.of(context).splashColor,
                     borderRadius: BorderRadius.circular(8.0),
                     ),
@@ -556,11 +556,11 @@ class CreateOrderPageState extends State<CreateOrderPage>
                       : currentTheme == CSS.darkTheme
                       ? Theme.of(context).unselectedWidgetColor
                       : currentTheme == CSS.mintTheme
-                      ? Theme.of(context).indicatorColor
+                      ? Theme.of(context).tabBarTheme.indicatorColor
                       : currentTheme == CSS.lsiTheme
                       ? Theme.of(context).splashColor
                       : currentTheme == CSS.pinkTheme
-                      ? Theme.of(context).indicatorColor
+                      ? Theme.of(context).tabBarTheme.indicatorColor
                       : Theme.of(context).splashColor,
                     borderRadius: BorderRadius.circular(8.0),
                     ),
@@ -609,11 +609,11 @@ class CreateOrderPageState extends State<CreateOrderPage>
                       : currentTheme == CSS.darkTheme
                       ? Theme.of(context).unselectedWidgetColor
                       : currentTheme == CSS.mintTheme
-                      ? Theme.of(context).indicatorColor
+                      ? Theme.of(context).tabBarTheme.indicatorColor
                       : currentTheme == CSS.lsiTheme
                       ? Theme.of(context).splashColor
                       : currentTheme == CSS.pinkTheme
-                      ? Theme.of(context).indicatorColor
+                      ? Theme.of(context).tabBarTheme.indicatorColor
                       : Theme.of(context).splashColor,
                     borderRadius: BorderRadius.circular(8.0),
                     ),
@@ -730,7 +730,7 @@ class CreateOrderPageState extends State<CreateOrderPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           DropdownButtonFormField<String>(
-            value: _selectedProcess,
+            initialValue: _selectedProcess,
             decoration: InputDecoration(
               labelText: 'Select Process',
               labelStyle: TextStyle(
@@ -773,7 +773,7 @@ class CreateOrderPageState extends State<CreateOrderPage>
             },
           ),
           DropdownButtonFormField<String>(
-            value: _selectedUnit,
+            initialValue: _selectedUnit,
             decoration: InputDecoration(
               labelText: 'Select Unit',
               labelStyle: TextStyle(
@@ -814,7 +814,7 @@ class CreateOrderPageState extends State<CreateOrderPage>
             },
           ),
           DropdownButtonFormField<String>(
-            value: _selectedType,
+            initialValue: _selectedType,
             decoration: InputDecoration(
               labelText: 'Select Type',
               labelStyle: TextStyle(
