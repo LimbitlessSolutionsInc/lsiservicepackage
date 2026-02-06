@@ -97,7 +97,7 @@ const String orderJson = '''
     "dateSubmitted": "2024-06-20",
     "journalTransferNumber": "JT001",
     "department": "Computer Science",
-    "status": "Received",
+    "status": "Completed",
     "comment": "Add comment" 
   },
   {

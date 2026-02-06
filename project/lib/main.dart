@@ -1768,7 +1768,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
 
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text('Order #$orderNumber is set for cancellation.'),
+      content: Text('Order #$orderNumber cancellation requested.'),
       duration: const Duration(seconds: 3),
     ),
   );
