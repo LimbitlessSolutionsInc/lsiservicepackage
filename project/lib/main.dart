@@ -22,7 +22,9 @@ class MyApp extends StatefulWidget {
 
 class MyAppState extends State<MyApp> 
 {
-  //ThemeData currentTheme = CSS.lightTheme;
+
+  ThemeData currentTheme = CSS.lightTheme;
+
   void switchTheme(LsiThemes theme) {
     setState(() {
       currentTheme = CSS.changeTheme(theme);  
@@ -40,18 +42,24 @@ class MyAppState extends State<MyApp>
   }
 }
 
-class MyHomePage extends StatelessWidget {
-
+class MyHomePage extends StatefulWidget {
   final Function(LsiThemes) onThemeChanged;
 
-  const MyHomePage({Key? key, required this.onThemeChanged}) : super(key: key);
+  const MyHomePage({super.key, required this.onThemeChanged});
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  bool isSettingsOpen = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Services:',
+          'Limbitless Services:',
           style: TextStyle(
             fontFamily: 'Klavika',
             fontWeight: FontWeight.bold,
@@ -60,107 +68,174 @@ class MyHomePage extends StatelessWidget {
         ),
         backgroundColor: Theme.of(context).cardColor,
         actions: <Widget>[
-          // Theme switcher dropdown in the AppBar
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DropdownButton<LsiThemes>(
-              value: LsiThemes.light,  
-              items: LsiThemes.values.map((LsiThemes theme) {
-                return DropdownMenuItem<LsiThemes>(
-                  value: theme,
-                  child: Text(theme.name),
-                );
-              }).toList(),
-              onChanged: (LsiThemes? newTheme) {
-                if (newTheme != null) {
-                  onThemeChanged(newTheme);  
-                }
-              },
-            ),
+          // User Button
+          IconButton(
+            icon: const Icon(Icons.person_rounded),
+            onPressed: () {},
+          ),
+          // Settings Button
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              setState(() {
+                isSettingsOpen = true; // Use the boolean instead of Navigator
+              });
+            },
           ),
         ],
       ),
-      body: Container(
-        color: Theme.of(context).canvasColor,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
+        children: <Widget> [
+          Container(
+            color: Theme.of(context).canvasColor,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CreateOrderPage()),
+                      );
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                      side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
+                      shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      )),
+                    ),
+                    child: Text(
+                      'CREATE ORDER',
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColorLight,
+                        fontFamily: 'Klavika',
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16.0), 
+
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const TrackOrderPage()),
+                      );
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                      side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
+                      shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      )),
+                    ),
+                    child: Text(
+                      'TRACK ORDER',
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColorLight,
+                        fontFamily: 'Klavika',
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16.0),
+
+                  // New button to go to Admin Page
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AdminServices()), // Navigate to AdminServices
+                      );
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                      side: WidgetStateProperty.all(BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
+                      shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      )),
+                    ),
+                    child: Text(
+                      'ADMIN PAGE', // Button text
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColorLight,
+                        fontFamily: 'Klavika',
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (isSettingsOpen)
+            AppSettingsDrawer(
+              onThemeChanged: widget.onThemeChanged,
+              onClose: () => setState(() => isSettingsOpen = false), // Pass a way to close
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AppSettingsDrawer extends StatelessWidget{
+  final Function(LsiThemes) onThemeChanged;
+  final VoidCallback onClose;
+
+  const AppSettingsDrawer({Key? key, required this.onThemeChanged, required this.onClose}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: FractionallySizedBox(
+        widthFactor: 0.3,
+        heightFactor: 1.0,
+        child: Material(
+          elevation: 16,
+          color:Theme.of(context).canvasColor,
+          child: ListView(
+            padding: EdgeInsets.zero,
             children: <Widget>[
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CreateOrderPage()),
-                  );
-                },
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
-                  side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
-                  shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                )),
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
                 ),
                 child: Text(
-                  'CREATE ORDER',
+                  'App Settings',
                   style: TextStyle(
-                    color: Theme.of(context).primaryColorLight,
-                    fontFamily: 'Klavika',
-                    fontWeight: FontWeight.bold
+                    color: Theme.of(context).secondaryHeaderColor,
+                    fontSize: 24,
                   ),
                 ),
               ),
-
-              const SizedBox(height: 16.0), 
-
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const TrackOrderPage()),
-                  );
-                },
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
-                  side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
-                  shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  )),
-                ),
-                child: Text(
-                  'TRACK ORDER',
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColorLight,
-                    fontFamily: 'Klavika',
-                    fontWeight: FontWeight.bold,
-                  ),
+              ListTile(
+                title: const Text('Theme'),
+                trailing: DropdownButton<LsiThemes>(
+                  value: LsiThemes.light,  
+                  items: LsiThemes.values.map((LsiThemes theme) {
+                    return DropdownMenuItem<LsiThemes>(
+                      value: theme,
+                      child: Text(theme.name),
+                    );
+                  }).toList(),
+                  onChanged: (LsiThemes? newTheme) {
+                    if (newTheme != null) {
+                      onThemeChanged(newTheme);  
+                    }
+                  },                
                 ),
               ),
-
-              const SizedBox(height: 16.0),
-
-              // New button to go to Admin Page
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminServices()), // Navigate to AdminServices
-                  );
-                },
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
-                  side: WidgetStateProperty.all(BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
-                  shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  )),
-                ),
-                child: Text(
-                  'GO TO ADMIN PAGE', // Button text
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColorLight,
-                    fontFamily: 'Klavika',
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.close),
+                title: const Text('Close Settings'),
+                onTap: onClose,
               ),
             ],
           ),
@@ -169,7 +244,6 @@ class MyHomePage extends StatelessWidget {
     );
   }
 }
-
 
 class NewOrder {
   final String process;
