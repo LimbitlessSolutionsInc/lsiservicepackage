@@ -89,83 +89,119 @@ class _MyHomePageState extends State<MyHomePage> {
           Container(
             color: Theme.of(context).canvasColor,
             child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const CreateOrderPage()),
-                      );
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
-                      side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
-                      shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      )),
-                    ),
-                    child: Text(
-                      'CREATE ORDER',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColorLight,
-                        fontFamily: 'Klavika',
-                        fontWeight: FontWeight.bold
-                      ),
+              child: Row(
+                children: [
+                  const Expanded(
+                    flex: 1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        HoverImageTile(
+                          assetPath: 'assets/images/3dprinting.png',
+                          title: '3D PRINTING',
+                          desc: 'this is a test desc for 3d printing',
+                        ),
+
+                        SizedBox(height: 3),
+
+                        HoverImageTile(
+                          assetPath: 'assets/images/milling.png',
+                          title: 'MILLING',
+                          desc: 'this is a test desc for milling'
+                        ),
+
+                        SizedBox(height: 3),
+
+                        HoverImageTile(
+                          assetPath: 'assets/images/3dprinting.png',
+                          title: 'THERMOFORMING',
+                          desc: 'this is a test desc for thermoforming',
+                        ),
+                      ],
                     ),
                   ),
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const CreateOrderPage()),
+                            );
+                          },
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                            side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
+                            shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            )),
+                          ),
+                          child: Text(
+                            'CREATE ORDER',
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColorLight,
+                              fontFamily: 'Klavika',
+                              fontWeight: FontWeight.bold
+                            ),
+                          ),
+                        ),
 
-                  const SizedBox(height: 16.0), 
+                        const SizedBox(height: 16.0), 
 
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const TrackOrderPage()),
-                      );
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
-                      side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
-                      shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      )),
-                    ),
-                    child: Text(
-                      'TRACK ORDER',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColorLight,
-                        fontFamily: 'Klavika',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const TrackOrderPage()),
+                            );
+                          },
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                            side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
+                            shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            )),
+                          ),
+                          child: Text(
+                            'TRACK ORDER',
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColorLight,
+                              fontFamily: 'Klavika',
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
 
-                  const SizedBox(height: 16.0),
+                        const SizedBox(height: 16.0),
 
-                  // New button to go to Admin Page
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const AdminServices()), // Navigate to AdminServices
-                      );
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
-                      side: WidgetStateProperty.all(BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
-                      shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      )),
-                    ),
-                    child: Text(
-                      'ADMIN PAGE', // Button text
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColorLight,
-                        fontFamily: 'Klavika',
-                        fontWeight: FontWeight.bold,
-                      ),
+                        // New button to go to Admin Page
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AdminServices()), // Navigate to AdminServices
+                            );
+                          },
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                            side: WidgetStateProperty.all(BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
+                            shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            )),
+                          ),
+                          child: Text(
+                            'ADMIN PAGE', // Button text
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColorLight,
+                              fontFamily: 'Klavika',
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -239,6 +275,73 @@ class AppSettingsDrawer extends StatelessWidget{
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class HoverImageTile extends StatefulWidget {
+  final String assetPath;
+  final String title;
+  final String desc;
+
+  const HoverImageTile({super.key, required this.assetPath, required this.title, required this.desc});
+
+  @override
+  State<HoverImageTile> createState() => _HoverImageTileState();
+}
+
+class _HoverImageTileState extends State<HoverImageTile> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child:Image.asset(widget.assetPath, fit: BoxFit.cover),
+            ),
+            Positioned.fill(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                color: _isHovered 
+                ? Theme.of(context).hoverColor.withOpacity(0.7) 
+                : Colors.transparent,
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  children: [
+                    Text(
+                      widget.title,
+                      style: TextStyle(
+                        color: _isHovered 
+                        ? Theme.of(context).secondaryHeaderColor 
+                        : Colors.transparent,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Klavika',
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      widget.desc,
+                      style: TextStyle(
+                        color: _isHovered 
+                        ? Theme.of(context).primaryColorDark 
+                        : Colors.transparent,
+                        fontSize: 15,
+                        fontFamily: 'Klavika',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
