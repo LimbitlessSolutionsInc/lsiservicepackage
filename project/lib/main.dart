@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:math';
 import 'admin_eng/admin.dart';
 import 'css/css.dart';
 
@@ -53,9 +52,19 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   bool isSettingsOpen = false;
+  final ScrollController _controller = ScrollController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -68,20 +77,17 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         backgroundColor: Theme.of(context).cardColor,
         actions: <Widget>[
-          // User Button
-          IconButton(
-            icon: const Icon(Icons.person_rounded),
-            onPressed: () {},
-          ),
           // Settings Button
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
               setState(() {
-                isSettingsOpen = true; // Use the boolean instead of Navigator
+                isSettingsOpen = true;
               });
             },
           ),
+
+          const SizedBox(width: 10), // adds a gap off the side of the screen
         ],
       ),
       body: Stack(
@@ -91,41 +97,59 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Center(
               child: Row(
                 children: [
-                  const Expanded(
-                    flex: 1,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        HoverImageTile(
-                          assetPath: 'assets/images/3dprinting.png',
-                          title: '3D PRINTING',
-                          desc: 'this is a test desc for 3d printing',
+                  SizedBox( // left side of the home screen
+                    height: screenHeight - kToolbarHeight,
+                    width: screenWidth / 3,
+                    child: SingleChildScrollView(
+                      child: SizedBox(
+                        height: screenHeight - kToolbarHeight,
+                        child: Container( // container for the color on the side of the screen
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).secondaryHeaderColor,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                blurRadius: 10,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                        
+                          height: 200,
+                          child: const Column( // all info for the machines
+                            children: [
+                              HoverImageTile( // class for the machine info cards
+                                assetPath: 'assets/images/emb_printer_3d_lg.png',
+                                desc: 'this is a test desc for 3d printing',
+                              ),
+
+                              HoverImageTile(
+                                assetPath: 'assets/images/emb_mill_lg.png',
+                                desc: 'this is a test desc for milling'
+                              ),
+
+                              HoverImageTile(
+                                assetPath: 'assets/images/emb_thermoform_lg.png',
+                                desc: 'this is a test desc for thermoforming',
+                              ),
+
+                            ],
+                          ),
                         ),
-
-                        SizedBox(height: 3),
-
-                        HoverImageTile(
-                          assetPath: 'assets/images/milling.png',
-                          title: 'MILLING',
-                          desc: 'this is a test desc for milling'
-                        ),
-
-                        SizedBox(height: 3),
-
-                        HoverImageTile(
-                          assetPath: 'assets/images/3dprinting.png',
-                          title: 'THERMOFORMING',
-                          desc: 'this is a test desc for thermoforming',
-                        ),
-                      ],
+                      ),
                     ),
+                    
                   ),
-                  Expanded(
+                  Expanded( // right side of the homepage
                     flex: 2,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ElevatedButton(
+                        SizedBox(
+                          height: 45, 
+                          width: 145,
+
+                          child: ElevatedButton(
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -148,10 +172,15 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                         ),
+                        ),
 
                         const SizedBox(height: 16.0), 
 
-                        ElevatedButton(
+                        SizedBox(
+                          height: 45,
+                          width: 140,
+
+                          child: ElevatedButton(
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -174,11 +203,15 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                         ),
+                        ),
 
                         const SizedBox(height: 16.0),
 
-                        // New button to go to Admin Page
-                        ElevatedButton(
+                        SizedBox(
+                          height: 45,
+                          width: 140,
+
+                          child: ElevatedButton(
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -201,6 +234,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                         ),
+                        ),
                       ],
                     ),
                   ),
@@ -211,7 +245,7 @@ class _MyHomePageState extends State<MyHomePage> {
           if (isSettingsOpen)
             AppSettingsDrawer(
               onThemeChanged: widget.onThemeChanged,
-              onClose: () => setState(() => isSettingsOpen = false), // Pass a way to close
+              onClose: () => setState(() => isSettingsOpen = false), // closes settings
           ),
         ],
       ),
@@ -283,66 +317,55 @@ class AppSettingsDrawer extends StatelessWidget{
 
 class HoverImageTile extends StatefulWidget {
   final String assetPath;
-  final String title;
   final String desc;
 
-  const HoverImageTile({super.key, required this.assetPath, required this.title, required this.desc});
+  const HoverImageTile({super.key, required this.assetPath, required this.desc});
 
   @override
   State<HoverImageTile> createState() => _HoverImageTileState();
 }
 
 class _HoverImageTileState extends State<HoverImageTile> {
-  bool _isHovered = false;
-
+  
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child:Image.asset(widget.assetPath, fit: BoxFit.cover),
-            ),
-            Positioned.fill(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                color: _isHovered 
-                ? Theme.of(context).hoverColor.withOpacity(0.7) 
-                : Colors.transparent,
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  children: [
-                    Text(
-                      widget.title,
-                      style: TextStyle(
-                        color: _isHovered 
-                        ? Theme.of(context).secondaryHeaderColor 
-                        : Colors.transparent,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Klavika',
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      widget.desc,
-                      style: TextStyle(
-                        color: _isHovered 
-                        ? Theme.of(context).primaryColorDark 
-                        : Colors.transparent,
-                        fontSize: 15,
-                        fontFamily: 'Klavika',
-                      ),
-                    ),
-                  ],
+      child: Stack(
+        children: [
+          Container( // function for the cards with info in them
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 5,
+                  offset: const Offset(7, 7),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+
+            height: 250,
+            width: 300,
+            padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.all(10),
+           
+            child: Column(
+              children: <Widget>[
+                Image.asset(widget.assetPath, width: 175, height: 175),
+
+                Text(
+                  widget.desc,
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+                    fontSize: 15,
+                    fontFamily: 'Klavika',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -377,16 +400,14 @@ class NewOrder {
   );
 }
 
-class CreateOrderPage extends StatefulWidget 
-{
+class CreateOrderPage extends StatefulWidget{
   const CreateOrderPage( { super.key }) ;
 
   @override
   CreateOrderPageState createState() => CreateOrderPageState();
 }
 
-class CreateOrderPageState extends State<CreateOrderPage> 
-{
+class CreateOrderPageState extends State<CreateOrderPage>{
   static const List<List<String>> acceptedExt = 
   [
     ['f3d', 'obj', 'stl', 'stp', 'step'],
@@ -464,11 +485,12 @@ class CreateOrderPageState extends State<CreateOrderPage>
     }
   }
 
+  int orderNumber = 1;
 
   void _submitOrder(BuildContext context) async {
     if (_formKey.currentState?.validate() ?? false) {
-      Random random = Random();
-      int orderNumber = 100 + random.nextInt(900);
+
+      String formattedOrderNumber = orderNumber.toString().padLeft(3, '0');
 
       double estimatedPrice = _volume * _rate * _quantity;
       NewOrder newOrder = NewOrder(
@@ -488,7 +510,7 @@ class CreateOrderPageState extends State<CreateOrderPage>
         newOrder.filePath = _fileName!;    
       }
       globalOrderDetails = OrderDetails()
-        ..orderNumber = orderNumber.toString()
+        ..orderNumber = formattedOrderNumber
         ..userName = _nameController.text
         ..rate = _rate
         ..type = _selectedType
@@ -497,8 +519,12 @@ class CreateOrderPageState extends State<CreateOrderPage>
         ..unit = _selectedUnit;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Order submitted! Your Order ID is $orderNumber')),
+        SnackBar(content: Text('Order submitted! Your Order ID is $formattedOrderNumber')),
       );
+
+      setState(() {
+        orderNumber++;
+      });
     }
   }
 
@@ -833,6 +859,7 @@ class CreateOrderPageState extends State<CreateOrderPage>
 
   Widget _buildFilePicker() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         ElevatedButton(
