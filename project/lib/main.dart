@@ -1284,6 +1284,10 @@ class CreateOrderPageState extends State<CreateOrderPage>{
     child: ElevatedButton(
       onPressed: () {
         _submitOrder(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CreateSubmitPage()),
+        );
       },
       style: ButtonStyle(
         backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
@@ -1377,6 +1381,124 @@ class CreateOrderPageState extends State<CreateOrderPage>{
   }
 }
 
+class CreateSubmitPage extends StatefulWidget {
+  const CreateSubmitPage({super.key});
+
+  @override
+  CreateSubmitPageState createState() => CreateSubmitPageState();
+}
+
+class CreateSubmitPageState extends State<CreateSubmitPage> {
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Order Confirmation',
+          style: TextStyle(
+            color: Theme.of(context).secondaryHeaderColor,
+            fontFamily: 'Klavika',
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Theme.of(context).cardColor,
+      ),
+      body: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height,
+          ),
+          child: Container(
+            color: Theme.of(context).canvasColor,
+            padding: const EdgeInsets.all(20),
+            
+            child: Center(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(15),
+
+              child: Column(
+                children: <Widget> [
+                  Text(
+                    'Order Submitted!',
+                    style: TextStyle(
+                      fontSize: 25,
+                      color:
+                        currentTheme == CSS.hallowTheme
+                        ? Theme.of(context).secondaryHeaderColor
+                        : currentTheme == CSS.darkTheme
+                        ? Theme.of(context).secondaryHeaderColor
+                        : currentTheme == CSS.mintTheme
+                        ? Theme.of(context).shadowColor
+                        : currentTheme == CSS.lsiTheme
+                        ? Theme.of(context).shadowColor
+                        : currentTheme == CSS.pinkTheme
+                        ? Theme.of(context).shadowColor
+                        : Theme.of(context).secondaryHeaderColor,
+                      fontFamily: 'Klavika',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  Text(
+                    'Order #${globalOrderDetails.orderNumber}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color:
+                        currentTheme == CSS.hallowTheme
+                        ? Theme.of(context).secondaryHeaderColor
+                        : currentTheme == CSS.darkTheme
+                        ? Theme.of(context).secondaryHeaderColor
+                        : currentTheme == CSS.mintTheme
+                        ? Theme.of(context).shadowColor
+                        : currentTheme == CSS.lsiTheme
+                        ? Theme.of(context).shadowColor
+                        : currentTheme == CSS.pinkTheme
+                        ? Theme.of(context).shadowColor
+                        : Theme.of(context).secondaryHeaderColor,
+                      fontFamily: 'Klavika',
+                      fontWeight: FontWeight.normal,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+
+                  Text(
+                    'Details:',
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color:
+                        currentTheme == CSS.hallowTheme
+                        ? Theme.of(context).secondaryHeaderColor
+                        : currentTheme == CSS.darkTheme
+                        ? Theme.of(context).secondaryHeaderColor
+                        : currentTheme == CSS.mintTheme
+                        ? Theme.of(context).shadowColor
+                        : currentTheme == CSS.lsiTheme
+                        ? Theme.of(context).shadowColor
+                        : currentTheme == CSS.pinkTheme
+                        ? Theme.of(context).shadowColor
+                        : Theme.of(context).secondaryHeaderColor,
+                      fontFamily: 'Klavika',
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+
+
+                ],
+              ),
+            ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class TrackOrderPage extends StatefulWidget {
   const TrackOrderPage({super.key});
