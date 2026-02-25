@@ -1257,6 +1257,15 @@ class TrackOrderPageState extends State<TrackOrderPage> {
   final double _volume = 100.0;
 
   bool _isTracking = false;
+  bool _validate = false;
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    _orderIdController.dispose();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -1301,6 +1310,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           fontFamily: 'Klavika',
                           fontWeight: FontWeight.normal,
                         ),
+                        errorText: _validate ? 'Order ID not found' : null,
                       ),
                       style: TextStyle(color: Theme.of(context).unselectedWidgetColor),
                     ),
@@ -1308,7 +1318,27 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                     const SizedBox(height: 16.0),
                     
                     ElevatedButton(
-                      onPressed: _trackOrder,
+                      onPressed: () {
+                        if(_orderIdController.text.isEmpty) {
+                          setState(() {
+                            _validate = _orderIdController.text.isEmpty;
+                          });
+                        }
+                        else if(_orderIdController.text != globalOrderDetails.orderNumber) {
+                          setState(() {
+                            _validate = true;
+                          });
+                        }
+                        else {
+                          setState(() {
+                            _validate = false;
+                          });
+                          _trackOrder;
+                          setState(() {
+                            _isTracking = true;
+                          });
+                        }
+                      },
                       style: ButtonStyle(
                         backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
                         side: WidgetStateProperty.all(
@@ -1448,7 +1478,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Order Number:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).hoverColor,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -1477,7 +1507,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Name:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).hoverColor,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -1506,7 +1536,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Process:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).hoverColor,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -1535,7 +1565,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Unit:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).hoverColor,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -1564,7 +1594,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Type:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).hoverColor,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -1593,7 +1623,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Quantity:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).hoverColor,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -1622,7 +1652,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Rate:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).hoverColor,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -1651,7 +1681,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Estimated Price:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).hoverColor,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
