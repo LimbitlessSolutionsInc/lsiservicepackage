@@ -8,6 +8,8 @@ import 'css/css.dart';
 
 ThemeData currentTheme = CSS.lightTheme;
 
+int orderNumber = 1;
+
 void main() {
   runApp(const MyApp());
 }
@@ -485,8 +487,6 @@ class CreateOrderPageState extends State<CreateOrderPage>{
     }
   }
 
-  int orderNumber = 1;
-
   void _submitOrder(BuildContext context) async {
     if (_formKey.currentState?.validate() ?? false) {
 
@@ -509,7 +509,7 @@ class CreateOrderPageState extends State<CreateOrderPage>{
       if (_filePath != null && _fileBytes != null) {
         newOrder.filePath = _fileName!;    
       }
-      globalOrderDetails = OrderDetails()
+      OrderDetails saveOrder = OrderDetails()
         ..orderNumber = formattedOrderNumber
         ..userName = _nameController.text
         ..rate = _rate
@@ -519,9 +519,13 @@ class CreateOrderPageState extends State<CreateOrderPage>{
         ..unit = _selectedUnit
         ..price = _rate * _quantity * _volume;
 
+      setState(() {
+        globalOrderDetails.add(saveOrder);
+      });
+
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const CreateSubmitPage()),
+        MaterialPageRoute(builder: (context) => CreateSubmitPage(order: saveOrder)),
       );
 
       setState(() {
@@ -1116,14 +1120,15 @@ class CreateOrderPageState extends State<CreateOrderPage>{
 }
 
 class CreateSubmitPage extends StatefulWidget {
-  const CreateSubmitPage({super.key});
+  final OrderDetails order;
+  const CreateSubmitPage({super.key, required this.order});
 
   @override
   CreateSubmitPageState createState() => CreateSubmitPageState();
 }
 
 class CreateSubmitPageState extends State<CreateSubmitPage> {
-  final OrderDetails order = globalOrderDetails;
+  final order = globalOrderDetails[globalOrderDetails.length - 1];
 
   Widget _buildDetailRow(String label, String value, {bool isBold = false}) {
     return Padding(
@@ -1255,6 +1260,7 @@ class TrackOrderPage extends StatefulWidget {
 class TrackOrderPageState extends State<TrackOrderPage> {
   final TextEditingController _orderIdController = TextEditingController();
   final double _volume = 100.0;
+  int i = 0;
 
   bool _isTracking = false;
   bool _validate = false;
@@ -1324,7 +1330,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                             _validate = _orderIdController.text.isEmpty;
                           });
                         }
-                        else if(_orderIdController.text != globalOrderDetails.orderNumber) {
+                        else if(globalOrderDetails.contains(_orderIdController.text)) {
                           setState(() {
                             _validate = true;
                           });
@@ -1332,10 +1338,8 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                         else {
                           setState(() {
                             _validate = false;
-                          });
-                          _trackOrder;
-                          setState(() {
                             _isTracking = true;
+                            i = globalOrderDetails.indexWhere((order) => order.orderNumber == _orderIdController.text); // finds the index for matching value
                           });
                         }
                       },
@@ -1361,7 +1365,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                     ),
                   ] else ...[
                     Text(
-                      'Hi, ${globalOrderDetails.userName}',
+                      'Hi, ${globalOrderDetails[i].userName}',
                       style: TextStyle(
                         color:
                             currentTheme == 
@@ -1486,7 +1490,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              globalOrderDetails.orderNumber,
+                              globalOrderDetails[i].orderNumber,
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor, 
@@ -1515,7 +1519,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              globalOrderDetails.userName,
+                              globalOrderDetails[i].userName,
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor, 
@@ -1544,7 +1548,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              globalOrderDetails.process,
+                              globalOrderDetails[i].process,
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor, 
@@ -1573,7 +1577,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              globalOrderDetails.unit,
+                              globalOrderDetails[i].unit,
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor, 
@@ -1602,7 +1606,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              globalOrderDetails.type,
+                              globalOrderDetails[i].type,
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor, 
@@ -1631,7 +1635,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              globalOrderDetails.quantity.toString(),
+                              globalOrderDetails[i].quantity.toString(),
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor,
@@ -1660,7 +1664,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              '${globalOrderDetails.rate} per cubic unit',
+                              '${globalOrderDetails[i].rate} per cubic unit',
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor, 
@@ -1689,7 +1693,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              '\$${(_volume * (globalOrderDetails.rate) * (globalOrderDetails.quantity)).toStringAsFixed(2)}',
+                              '\$${(_volume * (globalOrderDetails[i].rate) * (globalOrderDetails[i].quantity)).toStringAsFixed(2)}',
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor,
@@ -1766,7 +1770,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
   }
 
   void _cancelOrder(BuildContext context) {
-  final String orderNumber = globalOrderDetails.orderNumber;
+  final String orderNumber = globalOrderDetails[i].orderNumber;
 
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
@@ -1778,14 +1782,6 @@ class TrackOrderPageState extends State<TrackOrderPage> {
     Navigator.of(context).pushReplacementNamed('/home'); 
   });
 }
-
-
-  void _trackOrder() {
-    setState(() {
-      //_orderStatus = 'Results for Order #${_orderIdController.text}:';
-      _isTracking = true;
-    });
-  }
 
   Widget _buildOrderStatus() {
     return Container(
@@ -1890,5 +1886,6 @@ class OrderDetails {
   double price = 0.0;
 }
 
-OrderDetails globalOrderDetails = OrderDetails();
+//OrderDetails globalOrderDetails = OrderDetails();
+List<OrderDetails> globalOrderDetails = [];
 
