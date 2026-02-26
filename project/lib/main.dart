@@ -217,7 +217,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const AdminServices()), // Navigate to AdminServices
+                              MaterialPageRoute(builder: (context) => const AdminPage()), // Navigate to AdminPage
                             );
                           },
                           style: ButtonStyle(
@@ -1330,7 +1330,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                             _validate = _orderIdController.text.isEmpty;
                           });
                         }
-                        else if(globalOrderDetails.contains(_orderIdController.text)) {
+                        else if(!globalOrderDetails.contains(_orderIdController.text)) {
                           setState(() {
                             _validate = true;
                           });
@@ -1886,6 +1886,5 @@ class OrderDetails {
   double price = 0.0;
 }
 
-//OrderDetails globalOrderDetails = OrderDetails();
 List<OrderDetails> globalOrderDetails = [];
 

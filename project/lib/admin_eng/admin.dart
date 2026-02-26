@@ -7,6 +7,175 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 ThemeData currentTheme = CSS.lightTheme;
 
+class AdminPage extends StatefulWidget {
+  const AdminPage({super.key});
+
+  @override
+  AdminPageState createState() => AdminPageState();
+}
+
+class AdminPageState extends State<AdminPage> {
+
+  @override
+  Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    //double screenWidth = MediaQuery.of(context).size.width;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Admin Page',
+          style: TextStyle(
+            fontFamily: 'Klavika',
+            fontWeight: FontWeight.bold,
+            fontSize: 22.0,
+            color: Theme.of(context).secondaryHeaderColor,
+          ),
+        ),
+        backgroundColor: Theme.of(context).cardColor,
+      ),
+
+      body: Stack(
+        children: <Widget> [
+          Container(
+            color: Theme.of(context).canvasColor,
+            child: Center(
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget> [
+                        Container(
+                          height: screenHeight - kToolbarHeight,
+                          decoration: BoxDecoration(
+                            image: const DecorationImage(
+                              image: AssetImage('assets/images/armwbluebackground.png'),
+                              fit: BoxFit.cover,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                blurRadius: 10,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 50,
+                          width: 170,
+
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const AdminServices()), // Button to go to Admin services
+                              );
+                            },
+
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                              side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
+                              shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              )),
+                            ),
+
+                            child: Text(
+                              'CURRENT ORDERS',
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColorLight,
+                                fontFamily: 'Klavika',
+                                fontWeight: FontWeight.bold
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        SizedBox(
+                          height: 50,
+                          width: 180,
+
+                          child: ElevatedButton(
+                            onPressed: () {
+
+                            }, 
+
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                              side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
+                              shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              )),
+                            ),
+
+                            child: Text(
+                              'COMPLETED ORDERS',
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColorLight,
+                                fontFamily: 'Klavika',
+                                fontWeight: FontWeight.bold
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        SizedBox(
+                          height: 50,
+                          width: 180,
+
+                          child: ElevatedButton(
+                            onPressed: () {
+
+                            }, 
+
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                              side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
+                              shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              )),
+                            ),
+
+                            child: Text(
+                              'CANCELLATION REQUESTS',
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColorLight,
+                                fontFamily: 'Klavika',
+                                fontWeight: FontWeight.bold
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class AdminServices extends StatefulWidget {
   const AdminServices({Key? key}) : super(key: key);
 
@@ -18,7 +187,6 @@ class AdminServices extends StatefulWidget {
       currentTheme = CSS.changeTheme(theme);  
     
   }
- 
 }
 
 class ProcessImage {
@@ -27,7 +195,6 @@ class ProcessImage {
 
   ProcessImage({required this.processName, required this.imagePath});
 }
-
 class AdminServicesState extends State<AdminServices> {
   String sortBy = 'Date';
   bool hideCompletedOrders = false; 
@@ -43,58 +210,58 @@ class AdminServicesState extends State<AdminServices> {
   
 
   Widget getProcessImage(String process) {
-  switch (process) {
-    case 'Thermoforming':
-      return const Image(image: AssetImage('assets/icons/emb_thermoform_sm.png'));
-    case '3D Printing':
-      return const Image(image: AssetImage('assets/icons/emb_printer_3d_sm.png'));
-    case 'Milling':
-      return const Image(image: AssetImage('assets/icons/emb_mill_sm.png'));
-    default:
-      return const Image(image: AssetImage('assets/icons/default_icon.png')); 
+    switch (process) {
+      case 'Thermoforming':
+        return const Image(image: AssetImage('assets/icons/emb_thermoform_sm.png'));
+      case '3D Printing':
+        return const Image(image: AssetImage('assets/icons/emb_printer_3d_sm.png'));
+      case 'Milling':
+        return const Image(image: AssetImage('assets/icons/emb_mill_sm.png'));
+      default:
+        return const Image(image: AssetImage('assets/icons/default_icon.png')); 
+    }
   }
-}
 
 
 
   @override
-void initState() {
-  super.initState();
+  void initState() {
+    super.initState();
 
-  loadOrders();
+    loadOrders();
 
-  filteredOrders = orders.where((order) {
-    if (hideCompletedOrders) {
-      return order.status != 'Completed'; 
-    }
-    return true; 
-  }).toList();
-  if (filteredOrders.isNotEmpty) {
-    graphStartDate = filteredOrders
+    filteredOrders = orders.where((order) {
+      if (hideCompletedOrders) {
+        return order.status != 'Completed'; 
+      }
+      return true; 
+    }).toList();
+    if (filteredOrders.isNotEmpty) {
+      graphStartDate = filteredOrders
         .map((order) => DateTime.parse(order.dateSubmitted)) 
         .reduce((a, b) => a.isBefore(b) ? a : b);
-  } else {
-    graphStartDate = DateTime.now(); 
+    } else {
+      graphStartDate = DateTime.now(); 
+    }
   }
-}
 
   Future<void> saveOrdersToLocalStorage() async {
-  final prefs = await SharedPreferences.getInstance();
-  final String ordersJson = jsonEncode(orders.map((e) => e.toJson()).toList());
-  await prefs.setString('orders', ordersJson);
-}
-
-
-Future<void> loadOrdersFromLocalStorage() async {
-  final prefs = await SharedPreferences.getInstance();
-  final String? ordersJson = prefs.getString('orders');
-
-  if (ordersJson != null) {
-    List<dynamic> jsonList = jsonDecode(ordersJson);
-    orders = jsonList.map((json) => NewOrder.fromJson(json)).toList();
+    final prefs = await SharedPreferences.getInstance();
+    final String ordersJson = jsonEncode(orders.map((e) => e.toJson()).toList());
+    await prefs.setString('orders', ordersJson);
   }
-  setState(() {});
-}
+
+
+  Future<void> loadOrdersFromLocalStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? ordersJson = prefs.getString('orders');
+
+    if (ordersJson != null) {
+      List<dynamic> jsonList = jsonDecode(ordersJson);
+      orders = jsonList.map((json) => NewOrder.fromJson(json)).toList();
+    }
+    setState(() {});
+  }
 
 
 
@@ -106,156 +273,155 @@ Future<void> loadOrdersFromLocalStorage() async {
   }
 
   int calculateDiffinMonths(DateTime start, DateTime end) {
-  int monDiff = ((end.year - start.year) * 12) + (end.month - start.month + 1);
-  return monDiff;
-}
-
-DateTime subtractDateByMon(DateTime date, int monthdiff) {
-  int newYear = date.year;
-  int newMonth = (date.month - monthdiff) + 1;
-
-  if (newMonth <= 0) {
-    newYear--;
-    newMonth = 12 + newMonth;
+    int monDiff = ((end.year - start.year) * 12) + (end.month - start.month + 1);
+    return monDiff;
   }
 
-  return DateTime(newYear, newMonth, 1);
-}
+  DateTime subtractDateByMon(DateTime date, int monthdiff) {
+    int newYear = date.year;
+    int newMonth = (date.month - monthdiff) + 1;
 
-
-List<Widget> chartHeader(BuildContext context) {
-  DateTime now = DateTime.now();
-  int numOfMonths = calculateDiffinMonths(graphStartDate, now);
-
-  int currYear = graphStartDate.year;
-  int currMon = graphStartDate.month;
-
-  double weekWidth = 250.0;
-  List<Widget> headerDates = [];
-
-  int startWeek = ((graphStartDate.day - 1) ~/ 7) + 1;
-
-  for (int i = 0; i < numOfMonths; i++) {
-    if (currMon > 12) {
-      currYear++;
-      currMon = 1;
+    if (newMonth <= 0) {
+      newYear--;
+      newMonth = 12 + newMonth;
     }
 
-    int endWeek = 4;
-    if (currMon == now.month && currYear == now.year) {
-      endWeek = ((now.day - 1) ~/ 7) + 1; 
-    }
+    return DateTime(newYear, newMonth, 1);
+  }
 
-    for (int j = (i == 0 ? startWeek - 1 : 0); j < endWeek; j++) {
-      headerDates.add(
-        SizedBox(
-          width: weekWidth,
-          child: Align(
-            alignment: Alignment.center,
-            child: Text(
-              "${Month.getMonth(currMon, currYear).name}. '${currYear.toString().substring(2)} Week ${j + 1}",
-              style: TextStyle(
-                fontFamily: 'Klavika',
-                fontWeight: FontWeight.bold,
-                fontSize: 20.0,
-                color: Theme.of(context).secondaryHeaderColor,
+
+  List<Widget> chartHeader(BuildContext context) {
+    DateTime now = DateTime.now();
+    int numOfMonths = calculateDiffinMonths(graphStartDate, now);
+
+    int currYear = graphStartDate.year;
+    int currMon = graphStartDate.month;
+
+    double weekWidth = 250.0;
+    List<Widget> headerDates = [];
+
+    int startWeek = ((graphStartDate.day - 1) ~/ 7) + 1;
+
+    for (int i = 0; i < numOfMonths; i++) {
+      if (currMon > 12) {
+        currYear++;
+        currMon = 1;
+      }
+
+      int endWeek = 4;
+      if (currMon == now.month && currYear == now.year) {
+        endWeek = ((now.day - 1) ~/ 7) + 1; 
+      }
+
+      for (int j = (i == 0 ? startWeek - 1 : 0); j < endWeek; j++) {
+        headerDates.add(
+          SizedBox(
+            width: weekWidth,
+            child: Align(
+              alignment: Alignment.center,
+              child: Text(
+                "${Month.getMonth(currMon, currYear).name}. '${currYear.toString().substring(2)} Week ${j + 1}",
+                style: TextStyle(
+                  fontFamily: 'Klavika',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20.0,
+                  color: Theme.of(context).secondaryHeaderColor,
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
+      }
+
+      currMon++;
     }
 
-    currMon++;
+    return headerDates;
   }
 
-  return headerDates;
-}
-
-List<Widget> timelineBars(BuildContext context) {
-  return [
-    SizedBox(
-      width: calculateTotalWidth(filteredOrders, weekWidth), 
-      child: Stack(
-        children: [
-          for (int week = 0;
-              week <= calculateDiffinWeeks(graphStartDate, DateTime.now());
-              week++)
-            Positioned(
-              left: week * weekWidth,
-              top: 0,
-              bottom: 0,
-              child: Container(
-                width: 2,
-                color: Colors.black54, 
+  List<Widget> timelineBars(BuildContext context) {
+    return [
+      SizedBox(
+        width: calculateTotalWidth(filteredOrders, weekWidth), 
+        child: Stack(
+          children: [
+            for (int week = 0; week <= calculateDiffinWeeks(graphStartDate, DateTime.now()); week++)
+              Positioned(
+                left: week * weekWidth,
+                top: 0,
+                bottom: 0,
+                child: Container(
+                  width: 2,
+                  color: Colors.black54, 
+                ),
               ),
-            ),
-          for (int index = 0; index < filteredOrders.length; index++)
-            Positioned(
-              top: index * 70.0 + 10, 
-              left: calculateBarPosition(
-                graphStartDate,
-                DateTime.parse(filteredOrders[index].dateSubmitted),
-                weekWidth,
-              ),
-              child: Container(
-                width: calculateBarWidth(
+            for (int index = 0; index < filteredOrders.length; index++)
+              Positioned(
+                top: index * 70.0 + 10, 
+                left: calculateBarPosition(
+                  graphStartDate,
                   DateTime.parse(filteredOrders[index].dateSubmitted),
-                  DateTime.now(),
                   weekWidth,
                 ),
-                height: 40.0,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).secondaryHeaderColor,
-                  borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  width: calculateBarWidth(
+                    DateTime.parse(filteredOrders[index].dateSubmitted),
+                    DateTime.now(),
+                    weekWidth,
+                  ),
+                  height: 40.0,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).secondaryHeaderColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
-    ),
-  ];
-}
+    ];
+  }
 
-int calculateDiffinWeeks(DateTime startDate, DateTime endDate) {
-  return endDate.difference(startDate).inDays ~/ 7 + 1;
-}
+  int calculateDiffinWeeks(DateTime startDate, DateTime endDate) {
+    return endDate.difference(startDate).inDays ~/ 7 + 1;
+  }
 
 
 
   double calculateBarPosition(DateTime graphStartDate, DateTime barStartDate, double weekWidth) {
-  int daysDifference = barStartDate.difference(graphStartDate).inDays;
-  return (daysDifference / 7) * weekWidth;
-}
+    int daysDifference = barStartDate.difference(graphStartDate).inDays;
+    return (daysDifference / 7) * weekWidth;
+  }
 
-double calculateBarWidth(DateTime startDate, DateTime endDate, double weekWidth) {
-  int daysDifference = endDate.difference(startDate).inDays + 1;
-  return (daysDifference / 7) * weekWidth;
-}
+  double calculateBarWidth(DateTime startDate, DateTime endDate, double weekWidth) {
+    int daysDifference = endDate.difference(startDate).inDays + 1;
+    return (daysDifference / 7) * weekWidth;
+  }
 
-double calculateTotalWidth(List<NewOrder> orders, double weekWidth) {
-  if (orders.isEmpty) return weekWidth;
-  DateTime earliestDate = DateTime.parse(orders.first.dateSubmitted);
-  DateTime latestDate = DateTime.now();
-  int totalWeeks = latestDate.difference(earliestDate).inDays ~/ 7;
-  return (totalWeeks + 1) * weekWidth; 
-}
+  double calculateTotalWidth(List<NewOrder> orders, double weekWidth) {
+    if (orders.isEmpty) return weekWidth;
+    DateTime earliestDate = DateTime.parse(orders.first.dateSubmitted);
+    DateTime latestDate = DateTime.now();
+    int totalWeeks = latestDate.difference(earliestDate).inDays ~/ 7;
+    return (totalWeeks + 1) * weekWidth; 
+  }
 
-void deleteOrder(int index) async {
-  setState(() {
-    orders.removeAt(index);
-    filteredOrders = orders.where((order) {
-      if (hideCompletedOrders && order.status == "Completed") {
-        return false;
-      }
-      return true;
-    }).toList();
-    expandedState = List<bool>.filled(orders.length, false);
-  });
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString(
-      'orders', jsonEncode(orders.map((e) => e.toJson()).toList()));
-}
+  void deleteOrder(int index) async {
+    setState(() {
+      orders.removeAt(index);
+      filteredOrders = orders.where((order) {
+        if (hideCompletedOrders && order.status == "Completed") {
+          return false;
+        }
+        return true;
+      }).toList();
+      expandedState = List<bool>.filled(orders.length, false);
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'orders', jsonEncode(orders.map((e) => e.toJson()).toList())
+    );
+  }
 
 
   @override
@@ -504,23 +670,23 @@ void deleteOrder(int index) async {
   }
 }
 
-  class OrderDetailsPage extends StatefulWidget {
-    final NewOrder order;
-    final int index;
+class OrderDetailsPage extends StatefulWidget {
+  final NewOrder order;
+  final int index;
 
-    const OrderDetailsPage({Key? key, required this.order, required this.index}) : super(key: key);
+  const OrderDetailsPage({Key? key, required this.order, required this.index}) : super(key: key);
 
-    @override
-    OrderDetailsPageState createState() => OrderDetailsPageState();
-  }
+  @override
+  OrderDetailsPageState createState() => OrderDetailsPageState();
+}
 
 class OrderDetailsPageState extends State<OrderDetailsPage> {
-String? updatedStatusMessage; 
-String selectedStatus = ''; 
-String comments = ''; 
-late TextEditingController _commentsController;
-List<String> savedComments = []; 
-final List<String> statuses = ['Received', 'In Progress', 'Delivered', 'Completed']; 
+  String? updatedStatusMessage; 
+  String selectedStatus = ''; 
+  String comments = ''; 
+  late TextEditingController _commentsController;
+  List<String> savedComments = []; 
+  final List<String> statuses = ['Received', 'In Progress', 'Delivered', 'Completed']; 
 
   @override
   void initState() {
@@ -556,13 +722,13 @@ final List<String> statuses = ['Received', 'In Progress', 'Delivered', 'Complete
 
 
   void updateStatus(BuildContext context, String newStatus) {
-  setState(() {
-    widget.order.status = newStatus; 
-    updatedStatusMessage = "Status updated successfully: $newStatus";
-  });
+    setState(() {
+      widget.order.status = newStatus; 
+      updatedStatusMessage = "Status updated successfully: $newStatus";
+    });
 
-  Navigator.pop(context, widget.order);
-}
+    Navigator.pop(context, widget.order);
+  }
 
 
   @override
@@ -572,30 +738,30 @@ final List<String> statuses = ['Received', 'In Progress', 'Delivered', 'Complete
   }
 
   void saveComment(BuildContext context) {
-  setState(() {
-    widget.order.comment = _commentsController.text; 
-  });
+    setState(() {
+      widget.order.comment = _commentsController.text; 
+    });
 
-  Navigator.pop(context, widget.order); 
+    Navigator.pop(context, widget.order); 
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Comment saved successfully!')),
-  );
-}
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Comment saved successfully!')),
+    );
+  }
 
 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    appBar: AppBar(
-    leading: IconButton(
-    icon: const Icon(Icons.close), 
-    onPressed: () => Navigator.pop(context), 
-    ),
-    backgroundColor: Theme.of(context).cardColor,
-    ),
-    body: Center(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close), 
+          onPressed: () => Navigator.pop(context), 
+        ),
+        backgroundColor: Theme.of(context).cardColor,
+      ),
+      body: Center(
         child: Container(
           color: Theme.of(context).canvasColor,
           padding: const EdgeInsets.all(16.0),
@@ -649,115 +815,115 @@ final List<String> statuses = ['Received', 'In Progress', 'Delivered', 'Complete
                                   ),
                                 ),
                                 Text(
-                                          'Order Number: ${widget.order.orderNumber}',
-                                          style: const TextStyle(
-                                            fontFamily: 'Klavika',
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: 17.0
-                                          ),
-                                        ),
-                                        Text(
-                                          'Unit: ${widget.order.unit}',
-                                          style: const TextStyle(
-                                            fontFamily: 'Klavika',
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: 17.0
-                                          ),
-                                        ),
-                                        Text(
-                                          'Type: ${widget.order.type}',
-                                          style: const TextStyle(
-                                            fontFamily: 'Klavika',
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: 17.0
-                                          ),
-                                        ),
-                                        Text(
-                                          'Quantity: ${widget.order.quantity}',
-                                          style: const TextStyle(
-                                            fontFamily: 'Klavika',
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: 17.0
-                                          ),
-                                        ),
-                                        Text(
-                                          'Rate: \$${widget.order.rate.toStringAsFixed(2)}',
-                                          style: const TextStyle(
-                                            fontFamily: 'Klavika',
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: 17.0
-                                          ),
-                                        ),
-                                        Text(
-                                          'Date Submitted: ${widget.order.dateSubmitted}',
-                                          style: const TextStyle(
-                                            fontFamily: 'Klavika',
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: 17.0
-                                          ),
-                                        ),
-                                        Text(
-                                          'Department: ${widget.order.department}',
-                                          style: const TextStyle(
-                                            fontFamily: 'Klavika',
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: 17.0
-                                          ),
-                                        ),
-                                        Text(
-                                          'Status: ${widget.order.status}',
-                                          style: const TextStyle(
-                                            fontFamily: 'Klavika',
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: 17.0
-                                          ),
-                                        ),
-                                        if (updatedStatusMessage != null) ...[
-                                          const SizedBox(height: 8.0),
-                                          Text(
-                                            updatedStatusMessage!,
-                                            style: const TextStyle(
-                                              color: Colors.green,
-                                              fontFamily: 'Klavika',
-                                              fontSize: 17.0
-                                              ),
-                                          ),
-                                        ],
-                                      ],
+                                  'Order Number: ${widget.order.orderNumber}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Klavika',
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 17.0                                        
+                                  ),
+                                ),
+                                Text(
+                                  'Unit: ${widget.order.unit}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Klavika',
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 17.0
+                                  ),
+                                ),
+                                Text(
+                                  'Type: ${widget.order.type}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Klavika',
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 17.0
+                                  ),
+                                ),
+                                Text(
+                                  'Quantity: ${widget.order.quantity}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Klavika',
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 17.0
+                                  ),
+                                ),
+                                Text(
+                                  'Rate: \$${widget.order.rate.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Klavika',
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 17.0
+                                  ),
+                                ),
+                                Text(
+                                  'Date Submitted: ${widget.order.dateSubmitted}',
+                                    style: const TextStyle(
+                                      fontFamily: 'Klavika',
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 17.0
                                     ),
                                   ),
-                          const SizedBox(height: 16.0),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              DropdownButton<String>(
-                                value: selectedStatus,
-                                items: statuses.map((status) {
-                                  final isDisabled = statuses.indexOf(status) <= statuses.indexOf(selectedStatus);
-                                  return DropdownMenuItem<String>(
-                                    value: status,
-                                    enabled: !isDisabled,
-                                    child: Text(
-                                      status,
-                                      style: TextStyle(
-                                        color: isDisabled ? Colors.grey : Colors.black,
+                                  Text(
+                                    'Department: ${widget.order.department}',
+                                    style: const TextStyle(
+                                      fontFamily: 'Klavika',
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 17.0
+                                    ),
+                                  ),
+                                  Text(
+                                    'Status: ${widget.order.status}',
+                                    style: const TextStyle(
+                                      fontFamily: 'Klavika',
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 17.0
+                                    ),
+                                  ),
+                                  if (updatedStatusMessage != null) ...[
+                                    const SizedBox(height: 8.0),
+                                    Text(
+                                      updatedStatusMessage!,
+                                      style: const TextStyle(
+                                        color: Colors.green,
+                                        fontFamily: 'Klavika',
+                                        fontSize: 17.0
                                       ),
                                     ),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    setState(() {
-                                      selectedStatus = value;
-                                      updatedStatusMessage = "Status updated successfully: $value";
-                                    });
-                                  }
-                                },
-                                dropdownColor: Theme.of(context).cardColor,
-                                style: const TextStyle(fontFamily: 'Klavika', fontWeight: FontWeight.normal),
+                                  ],
+                                ],
                               ),
-                              const SizedBox(width: 20.0),
-                              ElevatedButton(
+                            ),
+                            const SizedBox(height: 16.0),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                DropdownButton<String>(
+                                  value: selectedStatus,
+                                  items: statuses.map((status) {
+                                    final isDisabled = statuses.indexOf(status) <= statuses.indexOf(selectedStatus);
+                                    return DropdownMenuItem<String>(
+                                      value: status,
+                                      enabled: !isDisabled,
+                                      child: Text(
+                                        status,
+                                        style: TextStyle(
+                                          color: isDisabled ? Colors.grey : Colors.black,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      setState(() {
+                                        selectedStatus = value;
+                                        updatedStatusMessage = "Status updated successfully: $value";
+                                      });
+                                    }
+                                  },
+                                  dropdownColor: Theme.of(context).cardColor,
+                                  style: const TextStyle(fontFamily: 'Klavika', fontWeight: FontWeight.normal),
+                                ),
+                                const SizedBox(width: 20.0),
+                                ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red,
                                   padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -854,6 +1020,52 @@ final List<String> statuses = ['Received', 'In Progress', 'Delivered', 'Complete
           ),
         ),
       )
+    );
+  }
+}
+
+class CompleteOrdersPage extends StatefulWidget {
+  const CompleteOrdersPage({super.key});
+
+  @override
+  CompleteOrdersPageState createState() => CompleteOrdersPageState();
+}
+
+class CompleteOrdersPageState extends State<CompleteOrdersPage> {
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Completed Orders',
+          style: TextStyle(
+            fontFamily: 'Klavika',
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).secondaryHeaderColor,
+          ),
+        ),
+        backgroundColor: Theme.of(context).cardColor,
+      ),
+
+      body: Stack(
+        children: <Widget> [
+          Container(
+            color: Theme.of(context).canvasColor,
+            child: Center(
+              child: Row(
+                children: [
+                  SingleChildScrollView(
+                    child: Column(
+
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
