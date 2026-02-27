@@ -16,7 +16,6 @@ class TrackOrderPage extends StatefulWidget {
 class TrackOrderPageState extends State<TrackOrderPage> {
   final List<dynamic> orders = jsonDecode(orderJson);
   final TextEditingController _orderIdController = TextEditingController();
-  final double _volume = 100.0;
   var order;
 
   bool _isTracking = false;
