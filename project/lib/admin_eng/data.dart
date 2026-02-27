@@ -7,7 +7,7 @@ class NewOrder {
   final int quantity;
   final double rate;
   final double estimatedPrice;
-  final String filePath;
+  String filePath;
   final String dateSubmitted;
   final String journalTransferNumber;
   final String department;
@@ -81,7 +81,6 @@ class NewOrder {
   }
 }
 
-
 const String orderJson = '''
 [
   {
@@ -115,7 +114,6 @@ const String orderJson = '''
     "department": "Engineering",
     "status": "In Progress",
     "comment": "Add comment" 
-
   }
 ]
 ''';
