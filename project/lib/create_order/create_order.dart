@@ -4,7 +4,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:service_package/main.dart';
-import 'package:service_package/admin_eng/data.dart';
+import 'package:service_package/admin_eng/models/data.dart';
+import 'package:service_package/admin_eng/services/order_service.dart';
 
 class CreateOrderPage extends StatefulWidget{
   const CreateOrderPage( { super.key }) ;
@@ -14,7 +15,8 @@ class CreateOrderPage extends StatefulWidget{
 }
 
 class CreateOrderPageState extends State<CreateOrderPage>{
-  List<dynamic> orders = jsonDecode(orderJson);
+  final currentOrders = OrderService().orders;
+
   static const List<List<String>> acceptedExt = 
   [
     ['f3d', 'obj', 'stl', 'stp', 'step'],
@@ -98,34 +100,29 @@ class CreateOrderPageState extends State<CreateOrderPage>{
       String formattedOrderNumber = orderNumber.toString().padLeft(3, '0');
       double estimatedPrice = _volume * _rate * _quantity;
 
-      Map<String, dynamic> newOrder = {
-        "orderNumber": formattedOrderNumber,
-        "name": _nameController.text,
-        "process": _selectedProcess,
-        "unit": _selectedUnit,
-        "type": _selectedType,
-        "quantity": _quantity,
-        "rate": _rate,
-        "estimatedPrice": estimatedPrice,
-        "filePath": _filePath,
-        "dateSubmitted": _dateSubmitted,
-        "journalTransferNumber": _journalTransferNumber,
-        "department": _department,
-        "status": 'Received',
-        "comment": ' ',
-      };
-
+      String? displayPath = _filePath;
       if (_filePath != null && _fileBytes != null) {
-        newOrder['filePath'] = _fileName!;   
+        displayPath = _fileName; 
       }
 
-      // adds new order to the json string and then re-encodes the json
-      orders.add(newOrder);
-      jsonEncode(orders);
+      final newOrder = NewOrder(
+        orderNumber: formattedOrderNumber,
+        name: _nameController.text,
+        process: _selectedProcess,
+        unit: _selectedUnit,
+        type: _selectedType,
+        quantity: _quantity,
+        rate: _rate,
+        estimatedPrice: estimatedPrice,
+        filePath: displayPath ?? '',
+        dates: {'Submitted': _dateSubmitted},
+        journalTransferNumber: _journalTransferNumber,
+        department: _department,
+        status: 'Received',
+        comment: ' ',
+      );
 
-      setState(() {
-        orderNumber++;
-      });
+      await OrderService().addOrder(newOrder);
 
       Navigator.push(
         context,
@@ -727,7 +724,7 @@ class CreateSubmitPage extends StatefulWidget {
 }
 
 class CreateSubmitPageState extends State<CreateSubmitPage> {
-  final List<dynamic> orders = jsonDecode(orderJson);
+  final currentOrders = OrderService().orders;
 
   Widget _buildDetailRow(String label, String value, {bool isBold = false}) {
     return Padding(
@@ -762,7 +759,7 @@ class CreateSubmitPageState extends State<CreateSubmitPage> {
 
   @override
   Widget build(BuildContext context) {
-    final recentOrder = orders.last;
+    final recentOrder = currentOrders.last;
 
     return Scaffold(
       appBar: AppBar(
@@ -807,7 +804,7 @@ class CreateSubmitPageState extends State<CreateSubmitPage> {
                   ),
 
                   Text(
-                    'Order #${recentOrder['orderNumber']}',
+                    'Order #${recentOrder.orderNumber}',
                     style: TextStyle(
                       fontSize: 24,
                       color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).secondaryHeaderColor : Theme.of(context).secondaryHeaderColor,
@@ -830,16 +827,16 @@ class CreateSubmitPageState extends State<CreateSubmitPage> {
 
                   const Divider(),
 
-                  _buildDetailRow('Customer', recentOrder['name']),
-                  _buildDetailRow('Type', recentOrder['type']),
-                  _buildDetailRow('Process', recentOrder['process']),
-                  _buildDetailRow('Unit', recentOrder['unit']),
-                  _buildDetailRow('Quantity', "${recentOrder['quantity']}"),
-                  _buildDetailRow('Rate', "\$${recentOrder['rate'].toStringAsFixed(2)}"),
+                  _buildDetailRow('Customer', recentOrder.name),
+                  _buildDetailRow('Type', recentOrder.type),
+                  _buildDetailRow('Process', recentOrder.process),
+                  _buildDetailRow('Unit', recentOrder.unit),
+                  _buildDetailRow('Quantity', "${recentOrder.quantity}"),
+                  _buildDetailRow('Rate', "\$${recentOrder.rate.toStringAsFixed(2)}"),
 
                   const Divider(),
 
-                  _buildDetailRow("Total", "\$${recentOrder['estimatedPrice'].toStringAsFixed(2)}", isBold: true),
+                  _buildDetailRow("Total", "\$${recentOrder.estimatedPrice.toStringAsFixed(2)}", isBold: true),
                 ],
               ),
             ),

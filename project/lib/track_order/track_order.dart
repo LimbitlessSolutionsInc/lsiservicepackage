@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
 
-import 'package:service_package/admin_eng/data.dart';
+import 'package:service_package/admin_eng/models/data.dart';
+import 'package:service_package/admin_eng/services/order_service.dart';
 import '/css/css.dart';
 
 ThemeData currentTheme = CSS.lightTheme;
@@ -14,9 +14,9 @@ class TrackOrderPage extends StatefulWidget {
 }
 
 class TrackOrderPageState extends State<TrackOrderPage> {
-  final List<dynamic> orders = jsonDecode(orderJson);
+  final currentOrders = OrderService().orders;
   final TextEditingController _orderIdController = TextEditingController();
-  var order;
+  NewOrder? order;
 
   bool _isTracking = false;
   bool _validate = false;
@@ -79,23 +79,30 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                     const SizedBox(height: 16.0),
                     
                     ElevatedButton(
-                      onPressed: () {
-                        if(_orderIdController.text.isEmpty) {
+                      onPressed:() {
+                        final inputId = _orderIdController.text;
+
+                        if(inputId.isEmpty) {
                           setState(() {
-                            _validate = _orderIdController.text.isEmpty;
+                            _validate = inputId.isEmpty;
                           });
-                        }
-                        else if(!orders.any((item) => item['orderNumber'] == _orderIdController.text)) {
-                          setState(() {
-                            _validate = true;
-                          });
-                        }
-                        else {
-                          setState(() {
-                            _validate = false;
-                            _isTracking = true;
-                            order = orders.firstWhere((item) => item['orderNumber'] == _orderIdController.text, orElse: () => null); // finds the index for matching value
-                          });
+                        } else {
+                          final foundOrder = OrderService().orders.cast<NewOrder?>().firstWhere((o) => o?.orderNumber.trim() == inputId.trim(), orElse: () => null,);
+
+                          if(foundOrder != null) {
+                            // if order exists
+                            setState(() {
+                              _validate = false;
+                              _isTracking = true;
+                              order = foundOrder;
+                            });
+                          } else {
+                            // if order does not exist
+                            setState(() {
+                              _validate = true;
+                              _isTracking = false;
+                            });
+                          }
                         }
                       },
                       style: ButtonStyle(
@@ -120,7 +127,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                     ),
                   ] else ...[
                     Text(
-                      'Hi, ${order['name']}',
+                      'Hi, ${order?.name}',
                       style: TextStyle(
                         color:
                             currentTheme == 
@@ -245,7 +252,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              order['orderNumber'],
+                              order!.orderNumber,
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor, 
@@ -274,7 +281,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              '${order['name']}',
+                              '${order?.name}',
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor, 
@@ -303,7 +310,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              '${order['process']}',
+                              '${order?.process}',
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor, 
@@ -332,7 +339,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              order['unit'],
+                              order!.unit,
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor, 
@@ -361,7 +368,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              '${order['type']}',
+                              '${order?.type}',
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor, 
@@ -390,7 +397,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              order['quantity'].toString(),
+                              order!.quantity.toString(),
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor,
@@ -419,7 +426,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              '${order['rate']} per cubic unit',
+                              '${order?.rate} per cubic unit',
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor, 
@@ -448,7 +455,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           ),
                           Expanded(
                             child: Text(
-                              '\$${order['estimatedPrice'].toStringAsFixed(2)}',
+                              '\$${order?.estimatedPrice.toStringAsFixed(2)}',
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Theme.of(context).secondaryHeaderColor,
@@ -525,7 +532,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
   }
 
   void _cancelOrder(BuildContext context) {
-  final String orderNumber = order['orderNumber'];
+  final String orderNumber = order!.orderNumber;
 
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
@@ -579,13 +586,45 @@ class TrackOrderPageState extends State<TrackOrderPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildStatusContainer('Received', true, isLarge: false),
-                _buildStatusDivider(true),
-                _buildStatusContainer('In progress', false, isLarge: false),
-                _buildStatusDivider(false),
-                _buildStatusContainer('Delivered', false, isLarge: false),
-                _buildStatusDivider(false),
-                _buildStatusContainer('Completed', false, isLarge: false),
+                if(order!.status == 'Received') ...[
+                  _buildStatusContainer('Received', true, isLarge: false),
+                  _buildStatusDivider(true),
+                  _buildStatusContainer('In Progress', false, isLarge: false),
+                  _buildStatusDivider(false),
+                  _buildStatusContainer('Delivered', false, isLarge: false),
+                  _buildStatusDivider(false),
+                  _buildStatusContainer('Completed', false, isLarge: false),
+                ],
+                
+                if(order!.status == 'In Progress') ...[
+                  _buildStatusContainer('Received', true, isLarge: false),
+                  _buildStatusDivider(true),
+                  _buildStatusContainer('In Progress', true, isLarge: false),
+                  _buildStatusDivider(false),
+                  _buildStatusContainer('Delivered', false, isLarge: false),
+                  _buildStatusDivider(false),
+                  _buildStatusContainer('Completed', false, isLarge: false),
+                ],
+
+                if(order!.status == 'Delivered') ...[
+                  _buildStatusContainer('Received', true, isLarge: false),
+                  _buildStatusDivider(true),
+                  _buildStatusContainer('In Progress', true, isLarge: false),
+                  _buildStatusDivider(true),
+                  _buildStatusContainer('Delivered', true, isLarge: false),
+                  _buildStatusDivider(false),
+                  _buildStatusContainer('Completed', false, isLarge: false),
+                ],
+
+                if(order!.status == 'Completed') ...[
+                  _buildStatusContainer('Received', true, isLarge: false),
+                  _buildStatusDivider(true),
+                  _buildStatusContainer('In Progress', true, isLarge: false),
+                  _buildStatusDivider(true),
+                  _buildStatusContainer('Delivered', true, isLarge: false),
+                  _buildStatusDivider(true),
+                  _buildStatusContainer('Completed', true, isLarge: false),
+                ],
               ],
             ),
           ),

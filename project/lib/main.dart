@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
 
 // imported files
+import 'admin_eng/services/order_service.dart';
 import 'admin_eng/admin.dart';
 import 'track_order/track_order.dart';
 import 'create_order/create_order.dart';
 import 'css/css.dart';
 
 ThemeData currentTheme = CSS.lightTheme;
+int currentCount = OrderService().orders.length;
 
-int orderNumber = 3;
+int orderNumber = (currentCount + 1);
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // loads in JSON file info
+  try {
+    await OrderService().init();
+  } catch (e) {
+    debugPrint("Error initializing OrderService: $e");
+  }
+
+
   runApp(const MyApp());
 }
 

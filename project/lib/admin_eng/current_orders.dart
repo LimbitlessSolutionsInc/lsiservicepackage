@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'dart:convert'; 
 import '../css/css.dart';
 
-import 'data.dart';
+import 'models/data.dart';
+import 'package:service_package/admin_eng/services/order_service.dart';
 
 ThemeData currentTheme = CSS.lightTheme;
 
@@ -36,7 +37,7 @@ class AdminServicesState extends State<AdminServices> {
   final double dayWidth = 5.0;
   final double weekWidth = 250.0; 
   final ScrollController _scrollController = ScrollController(); 
-  late DateTime graphStartDate;
+  DateTime graphStartDate = DateTime.now();
 
   
 
@@ -58,50 +59,37 @@ class AdminServicesState extends State<AdminServices> {
   @override
   void initState() {
     super.initState();
+    // We initialize the data, then process it
+    _setupOrders();
+  }
 
-    loadOrders();
+  Future<void> _setupOrders() async {
+    await OrderService().init(); 
+  
+    // pull the orders 
+    final loadedOrders = OrderService().orders;
 
-    filteredOrders = orders.where((order) {
-      if (hideCompletedOrders) {
-        return order.status != 'Completed'; 
+    setState(() {
+      orders = loadedOrders;
+      expandedState = List<bool>.filled(orders.length, false);
+
+      // filter and calculate dates ONLY after checking if there's data
+      filteredOrders = orders.where((order) {
+        return hideCompletedOrders ? order.status != 'Completed' : true;
+      }).toList();
+
+      if (filteredOrders.isNotEmpty) {
+        graphStartDate = filteredOrders
+          .map((order) {
+            // Use tryParse to avoid the crash
+            return DateTime.tryParse(order.dates['Submitted'] ?? '') ?? DateTime.now();
+          })
+          .reduce((a, b) => a.isBefore(b) ? a : b);
+      } else {
+        graphStartDate = DateTime.now();
       }
-      return true; 
-    }).toList();
-    if (filteredOrders.isNotEmpty) {
-      graphStartDate = filteredOrders
-        .map((order) => DateTime.parse(order.dateSubmitted)) 
-        .reduce((a, b) => a.isBefore(b) ? a : b);
-    } else {
-      graphStartDate = DateTime.now(); 
-    }
-  }
-
-  Future<void> saveOrdersToLocalStorage() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String ordersJson = jsonEncode(orders.map((e) => e.toJson()).toList());
-    await prefs.setString('orders', ordersJson);
-  }
-
-
-  Future<void> loadOrdersFromLocalStorage() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? ordersJson = prefs.getString('orders');
-
-    if (ordersJson != null) {
-      List<dynamic> jsonList = jsonDecode(ordersJson);
-      orders = jsonList.map((json) => NewOrder.fromJson(json)).toList();
-    }
-    setState(() {});
-  }
-
-
-
-  void loadOrders() {
-    List<dynamic> jsonList = json.decode(orderJson);
-    orders = jsonList.map((json) => NewOrder.fromJson(json)).toList();
-    expandedState = List<bool>.filled(orders.length, false);
-    setState(() {});
-  }
+    });
+  } 
 
   int calculateDiffinMonths(DateTime start, DateTime end) {
     int monDiff = ((end.year - start.year) * 12) + (end.month - start.month + 1);
@@ -191,12 +179,12 @@ class AdminServicesState extends State<AdminServices> {
                 top: index * 70.0 + 10, 
                 left: calculateBarPosition(
                   graphStartDate,
-                  DateTime.parse(filteredOrders[index].dateSubmitted),
+                  DateTime.tryParse(filteredOrders[index].dates['Submitted'] ?? '') ?? DateTime.now(),
                   weekWidth,
                 ),
                 child: Container(
                   width: calculateBarWidth(
-                    DateTime.parse(filteredOrders[index].dateSubmitted),
+                    DateTime.tryParse(filteredOrders[index].dates['Submitted'] ?? '') ?? DateTime.now(),
                     DateTime.now(),
                     weekWidth,
                   ),
@@ -231,10 +219,16 @@ class AdminServicesState extends State<AdminServices> {
 
   double calculateTotalWidth(List<NewOrder> orders, double weekWidth) {
     if (orders.isEmpty) return weekWidth;
-    DateTime earliestDate = DateTime.parse(orders.first.dateSubmitted);
+  
+    // Safely parse the date
+    DateTime? earliestDate = DateTime.tryParse(orders.first.dates['Submitted'] ?? '');
+  
+    // Fallback to now if parsing fails
+    earliestDate ??= DateTime.now();
+  
     DateTime latestDate = DateTime.now();
     int totalWeeks = latestDate.difference(earliestDate).inDays ~/ 7;
-    return (totalWeeks + 1) * weekWidth; 
+    return (totalWeeks + 1) * weekWidth;
   }
 
   void deleteOrder(int index) async {
@@ -257,8 +251,12 @@ class AdminServicesState extends State<AdminServices> {
 
   @override
   Widget build(BuildContext context) {
+    if (orders.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     List<NewOrder> filteredOrders = orders.where((order) {
-      if (hideCompletedOrders && order.status == "Completed") {
+      if (order.status == "Completed") {
         return false;
       }
       return true;
@@ -288,7 +286,9 @@ class AdminServicesState extends State<AdminServices> {
                     color: Theme.of(context).secondaryHeaderColor,
                   ),
                 ),
+
                 const SizedBox(width: 4.0),
+
                 DropdownButton<String>(
                   value: sortBy,
                   icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).secondaryHeaderColor),
@@ -405,7 +405,7 @@ class AdminServicesState extends State<AdminServices> {
                           if (result != null && result is NewOrder) {
                             setState(() {
                               orders[index] = result; 
-                              saveOrdersToLocalStorage(); 
+                              OrderService().updateOrder(index, result);
                             });
 
                             filteredOrders = orders.where((order) {
@@ -686,7 +686,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                                   ),
                                 ),
                                 Text(
-                                  'Date Submitted: ${widget.order.dateSubmitted}',
+                                  'Date Submitted: ${widget.order.dates['Submitted']}',
                                     style: const TextStyle(
                                       fontFamily: 'Klavika',
                                       fontWeight: FontWeight.normal,

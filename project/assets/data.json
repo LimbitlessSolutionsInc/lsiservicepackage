@@ -1,0 +1,34 @@
+[
+  {
+    "orderNumber": "001",
+    "name": "Jhanel F",
+    "process": "Thermoforming",
+    "unit": "mm",
+    "type": "Aluminum",
+    "quantity": 10,
+    "rate": 2.5,
+    "estimatedPrice": 25.0,
+    "filePath": "path/to/file1.stl",
+    "dates": {"Submitted": "2024-06-20", "In Progress": "2024-06-27", "Delivered": "2024-07-02", "Completed": "2024-07-02"},
+    "journalTransferNumber": "JT001",
+    "department": "Computer Science",
+    "status": "Completed",
+    "comment": "Add comment" 
+  },
+  {
+    "orderNumber": "002",
+    "name": "Nadia W",
+    "process": "3D Printing",
+    "unit": "cm",
+    "type": "Steel",
+    "quantity": 5,
+    "rate": 4.7,
+    "estimatedPrice": 23.5,
+    "filePath": "path/to/file2.obj",
+    "dates": {"Submitted": "2026-02-21"},
+    "journalTransferNumber": "JT002",
+    "department": "Engineering",
+    "status": "In Progress",
+    "comment": "Add comment" 
+  }
+]

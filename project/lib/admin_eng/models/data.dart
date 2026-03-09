@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'data.g.dart'; 
+
+@JsonSerializable()
 class NewOrder {
   final String orderNumber;
   final String name;
@@ -8,7 +13,7 @@ class NewOrder {
   final double rate;
   final double estimatedPrice;
   String filePath;
-  final String dateSubmitted;
+  final Map<String, dynamic> dates;
   final String journalTransferNumber;
   final String department;
   final String? imagePath;
@@ -26,7 +31,7 @@ class NewOrder {
     required this.rate,
     required this.estimatedPrice,
     required this.filePath,
-    required this.dateSubmitted,
+    required this.dates,
     required this.journalTransferNumber,
     required this.department,
     required this.status,
@@ -35,88 +40,20 @@ class NewOrder {
     this.imagePath,
   });
 
-  factory NewOrder.fromJson(Map<String, dynamic> json) {
-    return NewOrder(
-      orderNumber: json['orderNumber'],
-      name: json['name'],
-      process: json['process'],
-      unit: json['unit'],
-      type: json['type'],
-      quantity: json['quantity'],
-      rate: (json['rate'] as num).toDouble(),
-      estimatedPrice: (json['estimatedPrice'] as num).toDouble(),
-      filePath: json['filePath'],
-      dateSubmitted: json['dateSubmitted'],
-      journalTransferNumber: json['journalTransferNumber'],
-      department: json['department'],
-      status: json['status'],
-      comment: json['comment'] ?? '', 
+  factory NewOrder.fromJson(Map<String, dynamic> json) => _$NewOrderFromJson(json); 
+  Map<String, dynamic> toJson() => _$NewOrderToJson(this);
 
-    );
-  }
   int daysSinceSubmitted() {
-    final date = DateTime.parse(dateSubmitted);
+    final date = DateTime.parse(dates['Submitted']);
     final now = DateTime.now();
     return now.difference(date).inDays;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'orderNumber': orderNumber,
-      'name': name,
-      'process': process,
-      'unit': unit,
-      'type': type,
-      'quantity': quantity,
-      'rate': rate,
-      'estimatedPrice': estimatedPrice,
-      'filePath': filePath,
-      'dateSubmitted': dateSubmitted,
-      'journalTransferNumber': journalTransferNumber,
-      'department': department,
-      'status': status,
-      'comment': comment,
-      'imagePath': imagePath,
-    };
+  // function to add data to the Map after it's creation
+  void addDates(String key, dynamic value) {
+    dates[key] = value;
   }
 }
-
-const String orderJson = '''
-[
-  {
-    "orderNumber": "001",
-    "name": "Jhanel F",
-    "process": "Thermoforming",
-    "unit": "mm",
-    "type": "Aluminum",
-    "quantity": 10,
-    "rate": 2.5,
-    "estimatedPrice": 25.0,
-    "filePath": "path/to/file1.stl",
-    "dateSubmitted": "2024-06-20",
-    "journalTransferNumber": "JT001",
-    "department": "Computer Science",
-    "status": "Completed",
-    "comment": "Add comment" 
-  },
-  {
-    "orderNumber": "002",
-    "name": "Nadia W",
-    "process": "3D Printing",
-    "unit": "cm",
-    "type": "Steel",
-    "quantity": 5,
-    "rate": 4.7,
-    "estimatedPrice": 23.5,
-    "filePath": "path/to/file2.obj",
-    "dateSubmitted": "2024-08-21",
-    "journalTransferNumber": "JT002",
-    "department": "Engineering",
-    "status": "In Progress",
-    "comment": "Add comment" 
-  }
-]
-''';
 
 class Month {
   Month({
