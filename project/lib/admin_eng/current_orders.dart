@@ -29,7 +29,6 @@ class ProcessImage {
 }
 class AdminServicesState extends State<AdminServices> {
   String sortBy = 'Date';
-  bool hideCompletedOrders = false; 
   bool showAllOrders = true; 
   List<NewOrder> orders = []; 
   List<NewOrder> filteredOrders = []; 
@@ -73,15 +72,14 @@ class AdminServicesState extends State<AdminServices> {
       orders = loadedOrders;
       expandedState = List<bool>.filled(orders.length, false);
 
-      // filter and calculate dates ONLY after checking if there's data
+      // filter and calculate dates after checking and confirming if there's data
       filteredOrders = orders.where((order) {
-        return hideCompletedOrders ? order.status != 'Completed' : true;
+        return order.status != 'Completed';
       }).toList();
 
       if (filteredOrders.isNotEmpty) {
         graphStartDate = filteredOrders
           .map((order) {
-            // Use tryParse to avoid the crash
             return DateTime.tryParse(order.dates['Submitted'] ?? '') ?? DateTime.now();
           })
           .reduce((a, b) => a.isBefore(b) ? a : b);
@@ -111,90 +109,76 @@ class AdminServicesState extends State<AdminServices> {
 
   List<Widget> chartHeader(BuildContext context) {
     DateTime now = DateTime.now();
-    int numOfMonths = calculateDiffinMonths(graphStartDate, now);
-
-    int currYear = graphStartDate.year;
-    int currMon = graphStartDate.month;
-
+    // helper variable to get weeks in 7-day blocks
+    int totalWeeks = (now.difference(graphStartDate).inDays / 7).ceil();
     double weekWidth = 250.0;
     List<Widget> headerDates = [];
 
-    int startWeek = ((graphStartDate.day - 1) ~/ 7) + 1;
+    for (int i = 0; i < totalWeeks; i++) {
+      // Get the date at the start of the current week
+      DateTime weekStart = graphStartDate.add(Duration(days: i * 7));
+    
+      // calculates which week in the month it is
+      int weekOfMonth = ((weekStart.day - 1) ~/ 7) + 1;
+      String monthName = Month.getMonth(weekStart.month, weekStart.year).name;
 
-    for (int i = 0; i < numOfMonths; i++) {
-      if (currMon > 12) {
-        currYear++;
-        currMon = 1;
-      }
-
-      int endWeek = 4;
-      if (currMon == now.month && currYear == now.year) {
-        endWeek = ((now.day - 1) ~/ 7) + 1; 
-      }
-
-      for (int j = (i == 0 ? startWeek - 1 : 0); j < endWeek; j++) {
-        headerDates.add(
-          SizedBox(
-            width: weekWidth,
-            child: Align(
-              alignment: Alignment.center,
-              child: Text(
-                "${Month.getMonth(currMon, currYear).name}. '${currYear.toString().substring(2)} Week ${j + 1}",
-                style: TextStyle(
-                  fontFamily: 'Klavika',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20.0,
-                  color: Theme.of(context).secondaryHeaderColor,
-                ),
+      headerDates.add(
+        SizedBox(
+          width: weekWidth,
+          child: Center(
+            child: Text(
+              "$monthName '${weekStart.year.toString().substring(2)} - Week $weekOfMonth",
+              style: TextStyle(
+                fontFamily: 'Klavika',
+                fontWeight: FontWeight.bold,
+                fontSize: 20.0,
+                color: Theme.of(context).secondaryHeaderColor,
               ),
             ),
           ),
-        );
-      }
-
-      currMon++;
+        ),
+      );
     }
-
     return headerDates;
   }
 
   List<Widget> timelineBars(BuildContext context) {
+    DateTime now = DateTime.now();
+    int totalWeeks = (now.difference(graphStartDate).inDays / 7).ceil();
+    double weekWidth = 250.0;
+
     return [
       SizedBox(
-        width: calculateTotalWidth(filteredOrders, weekWidth), 
+        width: totalWeeks * weekWidth, // matches timeline bars to header 
         child: Stack(
           children: [
-            for (int week = 0; week <= calculateDiffinWeeks(graphStartDate, DateTime.now()); week++)
+            // for loops for the backgorund grids
+            for (int i = 0; i <= totalWeeks; i++)
               Positioned(
-                left: week * weekWidth,
+                left: i * weekWidth,
                 top: 0,
                 bottom: 0,
-                child: Container(
-                  width: 2,
-                  color: Colors.black54, 
-                ),
+                child: Container(width: 1, color: Colors.black12),
               ),
-            for (int index = 0; index < filteredOrders.length; index++)
-              Positioned(
-                top: index * 70.0 + 10, 
-                left: calculateBarPosition(
-                  graphStartDate,
-                  DateTime.tryParse(filteredOrders[index].dates['Submitted'] ?? '') ?? DateTime.now(),
-                  weekWidth,
-                ),
+
+            ...filteredOrders.asMap().entries.map((entry) {
+              int index = entry.key;
+              var order = entry.value;
+              DateTime submittedDate = DateTime.tryParse(order.dates['Submitted'] ?? '') ?? now;
+
+              return Positioned(
+                top: index * 70.0 + 10,
+                left: calculateBarPosition(graphStartDate, submittedDate, weekWidth),
                 child: Container(
-                  width: calculateBarWidth(
-                    DateTime.tryParse(filteredOrders[index].dates['Submitted'] ?? '') ?? DateTime.now(),
-                    DateTime.now(),
-                    weekWidth,
-                  ),
+                  width: calculateBarWidth(submittedDate, now, weekWidth),
                   height: 40.0,
                   decoration: BoxDecoration(
                     color: Theme.of(context).secondaryHeaderColor,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-              ),
+              );
+            }).toList(),
           ],
         ),
       ),
@@ -204,8 +188,6 @@ class AdminServicesState extends State<AdminServices> {
   int calculateDiffinWeeks(DateTime startDate, DateTime endDate) {
     return endDate.difference(startDate).inDays ~/ 7 + 1;
   }
-
-
 
   double calculateBarPosition(DateTime graphStartDate, DateTime barStartDate, double weekWidth) {
     int daysDifference = barStartDate.difference(graphStartDate).inDays;
@@ -235,7 +217,7 @@ class AdminServicesState extends State<AdminServices> {
     setState(() {
       orders.removeAt(index);
       filteredOrders = orders.where((order) {
-        if (hideCompletedOrders && order.status == "Completed") {
+        if (order.status == "Completed") {
           return false;
         }
         return true;
@@ -251,6 +233,7 @@ class AdminServicesState extends State<AdminServices> {
 
   @override
   Widget build(BuildContext context) {
+
     if (orders.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -261,10 +244,11 @@ class AdminServicesState extends State<AdminServices> {
       }
       return true;
     }).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Orders',
+          'Current Orders',
           style: TextStyle(
             fontFamily: 'Klavika',
             fontWeight: FontWeight.bold,
@@ -275,7 +259,7 @@ class AdminServicesState extends State<AdminServices> {
         backgroundColor: Theme.of(context).cardColor,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 8.0),
+            padding: const EdgeInsets.only(right: 10.0),
             child: Row(
               children: [
                 Text(
@@ -287,7 +271,7 @@ class AdminServicesState extends State<AdminServices> {
                   ),
                 ),
 
-                const SizedBox(width: 4.0),
+                const SizedBox(width: 5.0),
 
                 DropdownButton<String>(
                   value: sortBy,
@@ -299,7 +283,7 @@ class AdminServicesState extends State<AdminServices> {
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).secondaryHeaderColor,
                   ),
-                  items: <String>['Date', 'Status'].map<DropdownMenuItem<String>>((String value) {
+                  items: <String>['Date', 'Status', 'Process'].map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -310,54 +294,6 @@ class AdminServicesState extends State<AdminServices> {
                       sortBy = newValue!;
                     });
                   },
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Row(
-              children: [
-                Text(
-                  'Hide Completed Orders:',
-                  style: TextStyle(
-                    fontFamily: 'Klavika',
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).secondaryHeaderColor,
-                  ),
-                ),
-                Switch(
-                  value: hideCompletedOrders,
-                  onChanged: (bool value) {
-                    setState(() {
-                      hideCompletedOrders = value;
-                    });
-                  },
-                  activeThumbColor: Theme.of(context).secondaryHeaderColor,
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Row(
-              children: [
-                Text(
-                  'Show All Orders:',
-                  style: TextStyle(
-                    fontFamily: 'Klavika',
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).secondaryHeaderColor,
-                  ),
-                ),
-                Switch(
-                  value: showAllOrders,
-                  onChanged: (bool value) {
-                    setState(() {
-                      showAllOrders = value;
-                    });
-                  },
-                  activeThumbColor: Theme.of(context).secondaryHeaderColor,
                 ),
               ],
             ),
@@ -409,7 +345,7 @@ class AdminServicesState extends State<AdminServices> {
                             });
 
                             filteredOrders = orders.where((order) {
-                              if (hideCompletedOrders && order.status == "Completed") {
+                              if (order.status == "Completed") {
                                 return false;
                               }
                               return true;
@@ -608,6 +544,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                     child: Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: Theme.of(context).primaryColorLight),
+                        color: Theme.of(context).cardColor,
                       ),
                       constraints: const BoxConstraints(
                         maxHeight: 400,
@@ -784,6 +721,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                     child: Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: Theme.of(context).primaryColorLight),
+                        color: Theme.of(context).cardColor,
                       ),
                       constraints: const BoxConstraints(
                         maxHeight: 400,

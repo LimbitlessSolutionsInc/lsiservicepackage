@@ -25,7 +25,7 @@
     "rate": 4.7,
     "estimatedPrice": 23.5,
     "filePath": "path/to/file2.obj",
-    "dates": {"Submitted": "2026-02-21"},
+    "dates": {"Submitted": "2026-01-12", "In Progress":  "2026-02-21"},
     "journalTransferNumber": "JT002",
     "department": "Engineering",
     "status": "In Progress",
