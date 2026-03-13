@@ -1,6 +1,4 @@
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert'; 
 import '../css/css.dart';
 
 import 'models/data.dart';
@@ -27,6 +25,7 @@ class ProcessImage {
 
   ProcessImage({required this.processName, required this.imagePath});
 }
+
 class AdminServicesState extends State<AdminServices> {
   String sortBy = 'Date';
   bool showAllOrders = true; 
@@ -37,8 +36,10 @@ class AdminServicesState extends State<AdminServices> {
   final double weekWidth = 250.0; 
   final ScrollController _scrollController = ScrollController(); 
   DateTime graphStartDate = DateTime.now();
-
   
+  DateTime _startOfDay(DateTime date) { // strips extra time (hours/minutes) in the day and starts day at midnight
+    return DateTime(date.year, date.month, date.day);
+  }
 
   Widget getProcessImage(String process) {
     switch (process) {
@@ -52,8 +53,6 @@ class AdminServicesState extends State<AdminServices> {
         return const Image(image: AssetImage('assets/icons/default_icon.png')); 
     }
   }
-
-
 
   @override
   void initState() {
@@ -106,19 +105,16 @@ class AdminServicesState extends State<AdminServices> {
     return DateTime(newYear, newMonth, 1);
   }
 
-
   List<Widget> chartHeader(BuildContext context) {
     DateTime now = DateTime.now();
-    // helper variable to get weeks in 7-day blocks
     int totalWeeks = (now.difference(graphStartDate).inDays / 7).ceil();
     double weekWidth = 250.0;
     List<Widget> headerDates = [];
 
     for (int i = 0; i < totalWeeks; i++) {
-      // Get the date at the start of the current week
-      DateTime weekStart = graphStartDate.add(Duration(days: i * 7));
+      // start from current date and subtract weeks to go backwards in time
+      DateTime weekStart = now.subtract(Duration(days: i * 7));
     
-      // calculates which week in the month it is
       int weekOfMonth = ((weekStart.day - 1) ~/ 7) + 1;
       String monthName = Month.getMonth(weekStart.month, weekStart.year).name;
 
@@ -152,7 +148,7 @@ class AdminServicesState extends State<AdminServices> {
         width: totalWeeks * weekWidth, // matches timeline bars to header 
         child: Stack(
           children: [
-            // for loops for the backgorund grids
+            // for loops for the background grids
             for (int i = 0; i <= totalWeeks; i++)
               Positioned(
                 left: i * weekWidth,
@@ -168,9 +164,9 @@ class AdminServicesState extends State<AdminServices> {
 
               return Positioned(
                 top: index * 70.0 + 10,
-                left: calculateBarPosition(graphStartDate, submittedDate, weekWidth),
+                left: 10, // slight padding off the side
                 child: Container(
-                  width: calculateBarWidth(submittedDate, now, weekWidth),
+                  width: calculateBarWidth(submittedDate, weekWidth),
                   height: 40.0,
                   decoration: BoxDecoration(
                     color: Theme.of(context).secondaryHeaderColor,
@@ -178,7 +174,7 @@ class AdminServicesState extends State<AdminServices> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -189,14 +185,13 @@ class AdminServicesState extends State<AdminServices> {
     return endDate.difference(startDate).inDays ~/ 7 + 1;
   }
 
-  double calculateBarPosition(DateTime graphStartDate, DateTime barStartDate, double weekWidth) {
-    int daysDifference = barStartDate.difference(graphStartDate).inDays;
-    return (daysDifference / 7) * weekWidth;
-  }
+  double calculateBarWidth(DateTime startDate, double weekWidth) {
+    DateTime now = _startOfDay(DateTime.now()); // starts the day at midnight so new orders will show immediately
+    DateTime start = _startOfDay(startDate);
 
-  double calculateBarWidth(DateTime startDate, DateTime endDate, double weekWidth) {
-    int daysDifference = endDate.difference(startDate).inDays + 1;
-    return (daysDifference / 7) * weekWidth;
+    int daysDifference = now.difference(start).inDays.abs();
+  
+    return ((daysDifference + 1) / 7) * weekWidth;
   }
 
   double calculateTotalWidth(List<NewOrder> orders, double weekWidth) {
@@ -213,23 +208,25 @@ class AdminServicesState extends State<AdminServices> {
     return (totalWeeks + 1) * weekWidth;
   }
 
-  void deleteOrder(int index) async {
+  void _applySortAndFilter() { // sorts list of current orders by the different 'sort by' criteria 
     setState(() {
-      orders.removeAt(index);
-      filteredOrders = orders.where((order) {
-        if (order.status == "Completed") {
-          return false;
-        }
-        return true;
-      }).toList();
-      expandedState = List<bool>.filled(orders.length, false);
-    });
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      'orders', jsonEncode(orders.map((e) => e.toJson()).toList())
-    );
-  }
+      filteredOrders = orders.where((order) => order.status != "Completed").toList();
 
+      filteredOrders.sort((a, b) {
+        switch (sortBy) {
+          case 'Status':
+            return a.status.toLowerCase().compareTo(b.status.toLowerCase());
+          case 'Process':
+            return a.process.toLowerCase().compareTo(b.process.toLowerCase());
+          case 'Name':
+            return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+          case 'Date':
+          default:
+            return (a.dates['Submitted']).compareTo(b.dates['Submitted']);
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -237,13 +234,6 @@ class AdminServicesState extends State<AdminServices> {
     if (orders.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-
-    List<NewOrder> filteredOrders = orders.where((order) {
-      if (order.status == "Completed") {
-        return false;
-      }
-      return true;
-    }).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -258,10 +248,53 @@ class AdminServicesState extends State<AdminServices> {
         ),
         backgroundColor: Theme.of(context).cardColor,
         actions: [
+
           Padding(
             padding: const EdgeInsets.only(right: 10.0),
             child: Row(
               children: [
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 250,
+                        child: SearchAnchor(
+                        builder: (BuildContext context, SearchController controller) {
+                          return SearchBar(
+                            controller: controller,
+                            padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 16)),
+                            onTap: () {
+                              controller.openView();
+                            },
+                            onChanged: (_) {
+                              controller.openView();
+                            },
+                            leading: const Icon(Icons.search),
+
+                          );
+                        },
+                        suggestionsBuilder: (BuildContext context, SearchController controller) async {
+                          return List<ListTile>.generate(5, (int index) {
+                            final String item = 'item $index';
+                            return ListTile(
+                              title: Text(item),
+                              onTap: () {
+                                setState(() {
+                                  controller.closeView(item);
+                                });
+                              },
+                            );
+                          });
+                        },
+                      ),
+                  ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(width: 5),
+
                 Text(
                   'Sort By:',
                   style: TextStyle(
@@ -283,7 +316,7 @@ class AdminServicesState extends State<AdminServices> {
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).secondaryHeaderColor,
                   ),
-                  items: <String>['Date', 'Status', 'Process'].map<DropdownMenuItem<String>>((String value) {
+                  items: <String>['Date', 'Status', 'Process', 'Name'].map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -293,8 +326,11 @@ class AdminServicesState extends State<AdminServices> {
                     setState(() {
                       sortBy = newValue!;
                     });
+                    _applySortAndFilter(); // re-sorts the list
                   },
                 ),
+
+                
               ],
             ),
           ),
@@ -338,10 +374,15 @@ class AdminServicesState extends State<AdminServices> {
                             ),
                           );
 
-                          if (result != null && result is NewOrder) {
+                          if(result == 'deleted') {
                             setState(() {
-                              orders[index] = result; 
-                              OrderService().updateOrder(index, result);
+                              orders = OrderService().orders; 
+                              _applySortAndFilter();
+                            });
+                          } else if (result != null && result is NewOrder) {
+                            setState(() {
+                              orders = OrderService().orders; 
+                              _applySortAndFilter();
                             });
 
                             filteredOrders = orders.where((order) {
@@ -350,7 +391,10 @@ class AdminServicesState extends State<AdminServices> {
                               }
                               return true;
                             }).toList();
+
                           }
+
+                          _applySortAndFilter();
                         },
                         child: Card(
                           margin: const EdgeInsets.symmetric(vertical: 4.0),
@@ -448,6 +492,7 @@ class OrderDetailsPage extends StatefulWidget {
 }
 
 class OrderDetailsPageState extends State<OrderDetailsPage> {
+  final loadedOrders = OrderService().orders;
   String? updatedStatusMessage; 
   String selectedStatus = ''; 
   String comments = ''; 
@@ -475,9 +520,11 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
+                await OrderService().deleteOrder(widget.order.orderNumber); // deletes order from the JSON
+
                 Navigator.pop(context);
-                Navigator.pop(context, widget.index); 
+                Navigator.pop(context, 'delete'); 
               },
               child: const Text('Delete'),
             ),
@@ -487,16 +534,16 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
     );
   }
 
-
-  void updateStatus(BuildContext context, String newStatus) {
+  void updateStatus(String newStatus) async {
     setState(() {
-      widget.order.status = newStatus; 
-      updatedStatusMessage = "Status updated successfully: $newStatus";
+      widget.order.status = newStatus;
+      selectedStatus = newStatus;
+      widget.order.dates[newStatus] = DateTime.now().toIso8601String();
+      updatedStatusMessage = "Status updated to: $newStatus";
     });
 
-    Navigator.pop(context, widget.order);
+    await OrderService().updateOrder(widget.order); // updates status and dates in the JSON
   }
-
 
   @override
   void dispose() {
@@ -504,19 +551,17 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
     super.dispose();
   }
 
-  void saveComment(BuildContext context) {
+  void saveComment(BuildContext context) async {
     setState(() {
-      widget.order.comment = _commentsController.text; 
+      widget.order.comment = _commentsController.text;
     });
 
-    Navigator.pop(context, widget.order); 
+    await OrderService().updateOrder(widget.order); // adds comment in the JSON
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Comment saved successfully!')),
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -681,10 +726,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                                   }).toList(),
                                   onChanged: (value) {
                                     if (value != null) {
-                                      setState(() {
-                                        selectedStatus = value;
-                                        updatedStatusMessage = "Status updated successfully: $value";
-                                      });
+                                      updateStatus(value);
                                     }
                                   },
                                   dropdownColor: Theme.of(context).cardColor,
@@ -747,7 +789,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                               ),
                               padding: const EdgeInsets.all(8.0),
                               child: TextField(
-                                onChanged: (value) => comments = value,
+                                controller: _commentsController,
                                 maxLines: null,
                                 expands: true,
                                 decoration: const InputDecoration(

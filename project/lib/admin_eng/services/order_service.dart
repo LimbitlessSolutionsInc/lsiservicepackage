@@ -12,13 +12,13 @@ class OrderService {
   List<NewOrder> _orders = [];
   List<NewOrder> get orders => _orders;
 
-  // The key used to store your data in the browser/phone storage
+  // The key used to store data in the browser/phone storage
   static const String _storageKey = 'user_orders_data';
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     
-    // check if we already have saved data in the browser
+    // check if already saved data in the browser
     final String? savedJson = prefs.getString(_storageKey);
 
     if (savedJson != null && savedJson.isNotEmpty) {
@@ -46,21 +46,28 @@ class OrderService {
     await _saveToDisk(); // Triggers the save
   }
 
-  // This replaces all the File/Directory logic
+  // This replaces all the file/directory logic
   Future<void> _saveToDisk() async {
     final prefs = await SharedPreferences.getInstance();
     
-    // Convert your list of objects to a single JSON String
+    // convert list of objects to a single JSON String
     final String jsonString = jsonEncode(_orders.map((o) => o.toJson()).toList());
     
-    // Save that string to the browser's local storage
+    // save the string to the browser's local storage
     await prefs.setString(_storageKey, jsonString);
   }
 
-  Future<void> updateOrder(int index, NewOrder updatedOrder) async {
-  if (index >= 0 && index < _orders.length) {
-    _orders[index] = updatedOrder;
-    await _saveToDisk(); // This handles the SharedPreferences save for you
+  Future<void> updateOrder(NewOrder updatedOrder) async {
+    int index = _orders.indexWhere((o) => o.orderNumber == updatedOrder.orderNumber);
+    
+    if (index != -1) {
+      _orders[index] = updatedOrder;
+      await _saveToDisk(); // saves the updated list
+    }
   }
-}
+
+  Future<void> deleteOrder(String orderNumber) async {
+    _orders.removeWhere((o) => o.orderNumber == orderNumber);
+    await _saveToDisk(); // saves the updated list
+  }
 }

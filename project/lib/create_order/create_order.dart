@@ -123,6 +123,7 @@ class CreateOrderPageState extends State<CreateOrderPage>{
       );
 
       await OrderService().addOrder(newOrder);
+      orderNumber++;
 
       Navigator.push(
         context,

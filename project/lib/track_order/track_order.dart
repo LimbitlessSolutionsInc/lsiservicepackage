@@ -588,7 +588,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
               children: [
                 if(order!.status == 'Received') ...[
                   _buildStatusContainer('Received', true, isLarge: false),
-                  _buildStatusDivider(true),
+                  _buildStatusDivider(false),
                   _buildStatusContainer('In Progress', false, isLarge: false),
                   _buildStatusDivider(false),
                   _buildStatusContainer('Delivered', false, isLarge: false),
