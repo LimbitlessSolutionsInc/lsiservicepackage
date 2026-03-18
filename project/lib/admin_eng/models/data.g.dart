@@ -20,7 +20,9 @@ NewOrder _$NewOrderFromJson(Map<String, dynamic> json) => NewOrder(
       journalTransferNumber: json['journalTransferNumber'] as String,
       department: json['department'] as String,
       status: json['status'] as String,
-      comment: json['comment'] as String,
+      comment: (json['comment'] as List<dynamic>)
+          .map((e) => e as Map<String, dynamic>)
+          .toList(),
       successMessage: json['successMessage'] as String?,
       imagePath: json['imagePath'] as String?,
     );

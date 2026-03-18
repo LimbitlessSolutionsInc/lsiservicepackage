@@ -18,7 +18,7 @@ class NewOrder {
   final String department;
   final String? imagePath;
   String status;
-  String comment;
+  final List<Map<String, dynamic>> comment;
   String? successMessage;
 
   NewOrder({

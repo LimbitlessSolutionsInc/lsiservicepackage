@@ -260,35 +260,48 @@ class AdminServicesState extends State<AdminServices> {
                       SizedBox(
                         width: 250,
                         child: SearchAnchor(
-                        builder: (BuildContext context, SearchController controller) {
-                          return SearchBar(
-                            controller: controller,
-                            padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 16)),
-                            onTap: () {
-                              controller.openView();
-                            },
-                            onChanged: (_) {
-                              controller.openView();
-                            },
-                            leading: const Icon(Icons.search),
-
-                          );
-                        },
-                        suggestionsBuilder: (BuildContext context, SearchController controller) async {
-                          return List<ListTile>.generate(5, (int index) {
-                            final String item = 'item $index';
-                            return ListTile(
-                              title: Text(item),
+                          builder: (BuildContext context, SearchController controller) {
+                            return SearchBar(
+                              controller: controller,
+                              padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 16)),
                               onTap: () {
-                                setState(() {
-                                  controller.closeView(item);
-                                });
+                                controller.openView();
                               },
+                              onChanged: (_) {
+                                controller.openView();
+                              },
+                              leading: const Icon(Icons.search),
+
                             );
-                          });
-                        },
+                          },
+                          suggestionsBuilder: (BuildContext context, SearchController controller) async {
+                            final String keyword = controller.value.text.toLowerCase();
+
+                            filteredOrders = orders
+                              .where((order) => order.name.toLowerCase().contains(keyword))
+                              .toList();
+
+                            return filteredOrders.map((order) {
+                              return ListTile(
+                                title: Text(order.name),
+                                subtitle: Text("Order #: ${order.orderNumber}"),
+                                onTap: () async {
+                                  controller.closeView(order.name);
+
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => OrderDetailsPage(order: order),
+                                    ),
+                                  );
+
+                                  _applySortAndFilter();
+                                },
+                              );
+                            });
+                          },
+                        ),
                       ),
-                  ),
                     ],
                   ),
                 ),
@@ -329,8 +342,6 @@ class AdminServicesState extends State<AdminServices> {
                     _applySortAndFilter(); // re-sorts the list
                   },
                 ),
-
-                
               ],
             ),
           ),
@@ -370,7 +381,7 @@ class AdminServicesState extends State<AdminServices> {
                           final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => OrderDetailsPage(order: order, index: index),
+                              builder: (context) => OrderDetailsPage(order: order),
                             ),
                           );
 
@@ -483,9 +494,8 @@ class AdminServicesState extends State<AdminServices> {
 
 class OrderDetailsPage extends StatefulWidget {
   final NewOrder order;
-  final int index;
 
-  const OrderDetailsPage({Key? key, required this.order, required this.index}) : super(key: key);
+  const OrderDetailsPage({Key? key, required this.order}) : super(key: key);
 
   @override
   OrderDetailsPageState createState() => OrderDetailsPageState();

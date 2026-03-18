@@ -18,6 +18,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
   List<NewOrder> orders = []; 
   List<bool> expandedState = []; 
   List<NewOrder> filteredOrders = []; 
+  NewOrder? selectedOrder;
 
   Widget getProcessImage(String process) {
     switch (process) {
@@ -49,6 +50,89 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
     });
   }
 
+  void _applySortAndFilter() { // sorts list of current orders by the different 'sort by' criteria 
+    setState(() {
+      filteredOrders = orders.where((order) => order.status != "Completed").toList();
+
+      filteredOrders.sort((a, b) {
+        switch (sortBy) {
+          case 'Status':
+            return a.status.toLowerCase().compareTo(b.status.toLowerCase());
+          case 'Process':
+            return a.process.toLowerCase().compareTo(b.process.toLowerCase());
+          case 'Name':
+            return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+          case 'Date':
+          default:
+            return (a.dates['Submitted']).compareTo(b.dates['Submitted']);
+        }
+      });
+    });
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 150,
+          child: Text(label, style: TextStyle(color: Theme.of(context).secondaryHeaderColor, fontWeight: FontWeight.bold, fontSize: 16)),
+        ),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 16)),
+      ],
+    ),
+  );
+}
+
+  Widget _buildStatusContainer(String title, String date) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+      constraints: const BoxConstraints(
+        maxWidth: 270, 
+        minHeight: 85, 
+      ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).secondaryHeaderColor,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Center(
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).splashColor,
+                fontSize: 22.0, 
+                fontFamily: 'Klavika',
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            Text(
+              date,
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).splashColor,
+                fontSize: 16,
+                fontFamily: 'Klavika',
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusDivider() {
+    return Container(
+      height: 15,
+      width: 5,
+      color: (Theme.of(context).secondaryHeaderColor),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -74,9 +158,57 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
         backgroundColor: Theme.of(context).cardColor,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: 10.0),
             child: Row(
               children: [
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 250,
+                        child: SearchAnchor(
+                          builder: (BuildContext context, SearchController controller) {
+                            return SearchBar(
+                              controller: controller,
+                              padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 16)),
+                              onTap: () {
+                                controller.openView();
+                              },
+                              onChanged: (_) {
+                                controller.openView();
+                              },
+                              leading: const Icon(Icons.search),
+
+                            );
+                          },
+                          suggestionsBuilder: (BuildContext context, SearchController controller) async {
+                            final String keyword = controller.value.text.toLowerCase();
+
+                            filteredOrders = orders
+                              .where((order) => order.name.toLowerCase().contains(keyword))
+                              .toList();
+
+                            return filteredOrders.map((order) {
+                              return ListTile(
+                                title: Text(order.name),
+                                subtitle: Text("Order #: ${order.orderNumber}"),
+                                onTap: () async {
+                                  controller.closeView(order.name);
+
+                                  _applySortAndFilter();
+                                },
+                              );
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(width: 5),
+
                 Text(
                   'Sort By:',
                   style: TextStyle(
@@ -86,7 +218,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
                   ),
                 ),
 
-                const SizedBox(width: 4),
+                const SizedBox(width: 5.0),
 
                 DropdownButton<String>(
                   value: sortBy,
@@ -98,7 +230,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).secondaryHeaderColor,
                   ),
-                  items: <String>['Date', 'Process'].map<DropdownMenuItem<String>>((String value) {
+                  items: <String>['Date', 'Status', 'Process', 'Name'].map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -108,44 +240,8 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
                     setState(() {
                       sortBy = newValue!;
                     });
+                    _applySortAndFilter(); // re-sorts the list
                   },
-                ),
-              ],
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              children: [
-                SearchAnchor(
-                  builder: (BuildContext context, SearchController controller) {
-                    return SearchBar(
-                      controller: controller,
-                      padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 16)),
-                      onTap: () {
-                        controller.openView();
-                      },
-                      onChanged: (_) {
-                        controller.openView();
-                      },
-                      leading: const Icon(Icons.search),
-
-                    );
-                  },
-                  suggestionsBuilder: (BuildContext context, SearchController controller) async {
-                    return List<ListTile>.generate(5, (int index) {
-                      final String item = 'item $index';
-                      return ListTile(
-                        title: Text(item),
-                        onTap: () {
-                          setState(() {
-                            controller.closeView(item);
-                          });
-                        },
-                      );
-                    });
-                  },  
                 ),
               ],
             ),
@@ -176,28 +272,12 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
                     itemCount: filteredOrders.length,
                     itemBuilder: (context, index) {
                       NewOrder order = filteredOrders[index];
+
                       return GestureDetector(
                         onTap: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CompleteOrdersDetailPage(order: order, index: index),
-                            ),
-                          );
-
-                          if (result != null && result is NewOrder) {
-                            setState(() {
-                              orders[index] = result; 
-                            });
-
-                            filteredOrders = orders.where((order) {
-                              if (order.status != "Completed") {
-                                return false;
-                              } else {
-                                return true;
-                              }
-                            }).toList();
-                          }
+                          setState(() {
+                            selectedOrder = order; 
+                          });
                         },
                         child: Card(
                           margin: const EdgeInsets.symmetric(vertical: 4.0),
@@ -212,7 +292,9 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
                                     child: getProcessImage(order.process),
                                   ),
                                 ),
+
                                 const SizedBox(width: 8.0),
+
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,6 +305,14 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
                                           fontFamily: 'Klavika',
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        order.dates['Completed'],
+                                        style: const TextStyle(
+                                          fontFamily: 'Klavika',
+                                          fontWeight: FontWeight.normal,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -240,70 +330,134 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
 
-class CompleteOrdersDetailPage extends StatefulWidget {
-  final NewOrder order;
-  final int index;
+          if (selectedOrder != null)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(24), 
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center, 
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Order Details',
+                                style: TextStyle(
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Klavika',
+                                ),
+                              ),
 
-  const CompleteOrdersDetailPage({Key? key, required this.order, required this.index}) : super(key: key);
+                              const SizedBox(height: 4),
 
-  @override
-  CompleteDetailPageState createState() => CompleteDetailPageState();
-}
+                              ColoredBox(
+                                color: Theme.of(context).primaryColor,
+                                child: const SizedBox(height: 2, width: 200),
+                              ),
 
-class CompleteDetailPageState extends State<CompleteOrdersDetailPage> {
+                              const SizedBox(height: 24),
+                    
+                              _buildInfoRow('Order #:', selectedOrder!.orderNumber),
+                              _buildInfoRow('Name:', selectedOrder!.name),
+                              _buildInfoRow('Department:', selectedOrder!.department),
+                              _buildInfoRow('Process:', selectedOrder!.process),
+                              _buildInfoRow('Unit:', selectedOrder!.unit),
+                              _buildInfoRow('Type:', selectedOrder!.type),
+                              _buildInfoRow('Quantity:', selectedOrder!.quantity.toString()),
+                              _buildInfoRow('Price:', "\$${selectedOrder!.estimatedPrice.toStringAsFixed(2)}"),
+                    
+                              const SizedBox(height: 20), 
 
+                              Text(
+                                'Comments:',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold, 
+                                  fontSize: 16
+                                ),
+                              ),
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Row(
-        children: <Widget> [
-          Expanded(
-            flex: 2,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    blurRadius: 10,
-                    offset: const Offset(7, 7),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    'Order Details',
-                    style: TextStyle(
-                      fontFamily: 'Klavika',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24.0,
+                              ColoredBox(
+                                color: Theme.of(context).secondaryHeaderColor,
+                                child: const SizedBox(height: 2, width: 200),
+                              ),
+
+                              SizedBox(height: 24),
+
+                              SizedBox(
+                                width: 100,
+                                height: 100,
+                                child: Text(
+                                  selectedOrder!.comment,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.normal, 
+                                    fontSize: 16
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
 
-                  Text(
-                    'Order Number: ${widget.order.orderNumber}',
+                    const SizedBox(width: 20), 
 
-                  ),
-                ],
+                    Expanded(
+                      flex: 2,
+                      child: Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'Order Timeline',
+                                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'Klavika'),
+                              ),
+
+                              const SizedBox(height: 4),
+
+                              ColoredBox(
+                                color: Theme.of(context).primaryColor,
+                                child: const SizedBox(height: 2, width: 200),
+                              ),
+
+                              const SizedBox(height: 20),
+                    
+                              _buildStatusContainer('Received', selectedOrder!.dates['Submitted']),
+                              _buildStatusDivider(),
+                              _buildStatusContainer('In Progress', selectedOrder!.dates['In Progress']),
+                              _buildStatusDivider(),
+                              _buildStatusContainer('Delivered', selectedOrder!.dates['Delivered']),
+                              _buildStatusDivider(),
+                              _buildStatusContainer('Completed', selectedOrder!.dates['Completed']),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            const Expanded(
+              child: Center(
+                child: Text("Select an order from the list to view details", 
+                style: TextStyle(color: Colors.grey)),
               ),
             ),
-          ),
-
-          Expanded(
-            flex: 1,
-            child: Container(
-
-            ),
-          ),
         ],
       ),
     );
