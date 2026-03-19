@@ -52,7 +52,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
 
   void _applySortAndFilter() { // sorts list of current orders by the different 'sort by' criteria 
     setState(() {
-      filteredOrders = orders.where((order) => order.status != "Completed").toList();
+      filteredOrders = orders.where((order) => order.status == "Completed").toList();
 
       filteredOrders.sort((a, b) {
         switch (sortBy) {
@@ -71,20 +71,20 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
   }
 
   Widget _buildInfoRow(String label, String value) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8.0),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 150,
-          child: Text(label, style: TextStyle(color: Theme.of(context).secondaryHeaderColor, fontWeight: FontWeight.bold, fontSize: 16)),
-        ),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 16)),
-      ],
-    ),
-  );
-}
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 150,
+            child: Text(label, style: TextStyle(color: Theme.of(context).secondaryHeaderColor, fontWeight: FontWeight.bold, fontSize: 16)),
+          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 16)),
+        ],
+      ),
+    );
+  }
 
   Widget _buildStatusContainer(String title, String date) {
     return Container(
@@ -393,13 +393,54 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
                               SizedBox(height: 24),
 
                               SizedBox(
-                                width: 100,
-                                height: 100,
-                                child: Text(
-                                  selectedOrder!.comment,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.normal, 
-                                    fontSize: 16
+                                width: 600,
+                                height: 170,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Theme.of(context).primaryColorLight.withValues(alpha: 0.3)),
+                                    color: Theme.of(context).canvasColor,
+                                  ),
+                                  child:ListView.separated(
+                                    shrinkWrap: true, 
+                                    padding: const EdgeInsets.all(8.0),
+                                    physics: const AlwaysScrollableScrollPhysics(), 
+                                    itemCount: selectedOrder!.comment.length,
+
+  
+                                    separatorBuilder: (context, index) => Divider(
+                                      color: Theme.of(context).cardColor, 
+                                      thickness: 0.5,
+                                      height: 20, 
+                                    ),
+  
+  
+                                    itemBuilder: (context, index) {
+                                      final item = selectedOrder!.comment[index];
+    
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "${item['name']} - ${item['date']}",
+                                            style: const TextStyle(
+                                              fontFamily: 'Klavika', 
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 4),
+
+                                          Text(
+                                            "${item['text']}",
+                                            style: const TextStyle(
+                                              fontFamily: 'Klavika',
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   ),
                                 ),
                               ),

@@ -506,15 +506,17 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
   String? updatedStatusMessage; 
   String selectedStatus = ''; 
   String comments = ''; 
-  late TextEditingController _commentsController;
+  final TextEditingController _commentsController = TextEditingController() ;
+  final TextEditingController _nameController = TextEditingController();
   List<String> savedComments = []; 
   final List<String> statuses = ['Received', 'In Progress', 'Delivered', 'Completed']; 
 
   @override
   void initState() {
     super.initState();
+
     selectedStatus = widget.order.status; 
-    _commentsController = TextEditingController(text: widget.order.comment);
+
   }
 
   void deleteOrder(BuildContext context) {
@@ -548,7 +550,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
     setState(() {
       widget.order.status = newStatus;
       selectedStatus = newStatus;
-      widget.order.dates[newStatus] = DateTime.now().toIso8601String();
+      widget.order.dates[newStatus] = DateTime.now().toString().split(' ')[0];
       updatedStatusMessage = "Status updated to: $newStatus";
     });
 
@@ -558,19 +560,46 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
   @override
   void dispose() {
     _commentsController.dispose();
+    _nameController.dispose();
+
     super.dispose();
   }
 
   void saveComment(BuildContext context) async {
+    // won't save if fields are empty
+    if (_nameController.text.trim().isEmpty || _commentsController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter both a name and a comment.')),
+      );
+      return; 
+    }
+
+    final Map<String, dynamic> newEntry = {
+      'name': _nameController.text.trim(),
+      'date': DateTime.now().toString().split(' ')[0], 
+      'text': _commentsController.text.trim(),
+    };
+
+    // updates the UI and data
     setState(() {
-      widget.order.comment = _commentsController.text;
+      widget.order.comment.add(newEntry);
+    
+      _nameController.clear();
+      _commentsController.clear();
     });
 
-    await OrderService().updateOrder(widget.order); // adds comment in the JSON
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Comment saved successfully!')),
-    );
+    // updates the JSON and then shows comfirmation message
+    try {
+      await OrderService().updateOrder(widget.order);
+    
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Comment saved successfully!')),
+        );
+      }
+    } catch (e) {
+      print("Error saving comment: $e");
+    }
   }
 
   @override
@@ -583,6 +612,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
         ),
         backgroundColor: Theme.of(context).cardColor,
       ),
+
       body: Center(
         child: Container(
           color: Theme.of(context).canvasColor,
@@ -604,7 +634,9 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                       constraints: const BoxConstraints(
                         maxHeight: 400,
                       ),
+
                       padding: const EdgeInsets.all(12.0),
+
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -616,7 +648,14 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                               fontSize: 24.0,
                             ),
                           ),
+
+                          ColoredBox(
+                            color: Theme.of(context).secondaryHeaderColor,
+                            child: SizedBox(width: 145, height: 2),
+                          ),
+
                           const SizedBox(height: 8.0),
+
                           Expanded(
                             child: ListView(
                               padding: EdgeInsets.zero,
@@ -629,6 +668,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                                     fontSize: 17.0
                                   ),
                                 ),
+
                                 Text(
                                   'Process: ${widget.order.process}',
                                   style: const TextStyle(
@@ -637,6 +677,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                                     fontSize: 17.0
                                   ),
                                 ),
+
                                 Text(
                                   'Order Number: ${widget.order.orderNumber}',
                                   style: const TextStyle(
@@ -645,6 +686,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                                     fontSize: 17.0                                        
                                   ),
                                 ),
+
                                 Text(
                                   'Unit: ${widget.order.unit}',
                                   style: const TextStyle(
@@ -653,6 +695,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                                     fontSize: 17.0
                                   ),
                                 ),
+
                                 Text(
                                   'Type: ${widget.order.type}',
                                   style: const TextStyle(
@@ -661,6 +704,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                                     fontSize: 17.0
                                   ),
                                 ),
+
                                 Text(
                                   'Quantity: ${widget.order.quantity}',
                                   style: const TextStyle(
@@ -669,6 +713,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                                     fontSize: 17.0
                                   ),
                                 ),
+
                                 Text(
                                   'Rate: \$${widget.order.rate.toStringAsFixed(2)}',
                                   style: const TextStyle(
@@ -677,80 +722,88 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                                     fontSize: 17.0
                                   ),
                                 ),
+
                                 Text(
                                   'Date Submitted: ${widget.order.dates['Submitted']}',
-                                    style: const TextStyle(
-                                      fontFamily: 'Klavika',
-                                      fontWeight: FontWeight.normal,
-                                      fontSize: 17.0
-                                    ),
+                                  style: const TextStyle(
+                                    fontFamily: 'Klavika',
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 17.0
                                   ),
+                                ),
+
+                                Text(
+                                  'Department: ${widget.order.department}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Klavika',
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 17.0
+                                  ),
+                                ),
+
+                                Text(
+                                  'Status: ${widget.order.status}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Klavika',
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 17.0
+                                  ),
+                                ),
+
+                                if (updatedStatusMessage != null) ...[
+                                  const SizedBox(height: 8.0),
                                   Text(
-                                    'Department: ${widget.order.department}',
+                                    updatedStatusMessage!,
                                     style: const TextStyle(
+                                      color: Colors.green,
                                       fontFamily: 'Klavika',
-                                      fontWeight: FontWeight.normal,
                                       fontSize: 17.0
                                     ),
                                   ),
-                                  Text(
-                                    'Status: ${widget.order.status}',
-                                    style: const TextStyle(
-                                      fontFamily: 'Klavika',
-                                      fontWeight: FontWeight.normal,
-                                      fontSize: 17.0
-                                    ),
-                                  ),
-                                  if (updatedStatusMessage != null) ...[
-                                    const SizedBox(height: 8.0),
-                                    Text(
-                                      updatedStatusMessage!,
-                                      style: const TextStyle(
-                                        color: Colors.green,
-                                        fontFamily: 'Klavika',
-                                        fontSize: 17.0
-                                      ),
-                                    ),
-                                  ],
                                 ],
-                              ),
+                              ],
                             ),
+                          ),
+
                             const SizedBox(height: 16.0),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                DropdownButton<String>(
-                                  value: selectedStatus,
-                                  items: statuses.map((status) {
-                                    final isDisabled = statuses.indexOf(status) <= statuses.indexOf(selectedStatus);
-                                    return DropdownMenuItem<String>(
-                                      value: status,
-                                      enabled: !isDisabled,
-                                      child: Text(
-                                        status,
-                                        style: TextStyle(
-                                          color: isDisabled ? Colors.grey : Colors.black,
-                                        ),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              DropdownButton<String>(
+                                value: selectedStatus,
+                                items: statuses.map((status) {
+                                  final isDisabled = statuses.indexOf(status) <= statuses.indexOf(selectedStatus);
+                                  return DropdownMenuItem<String>(
+                                    value: status,
+                                    enabled: !isDisabled,
+                                    child: Text(
+                                      status,
+                                      style: TextStyle(
+                                        color: isDisabled ? Colors.grey : Colors.black,
                                       ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    if (value != null) {
-                                      updateStatus(value);
-                                    }
-                                  },
-                                  dropdownColor: Theme.of(context).cardColor,
-                                  style: const TextStyle(fontFamily: 'Klavika', fontWeight: FontWeight.normal),
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    updateStatus(value);
+                                  }
+                                },
+                                dropdownColor: Theme.of(context).cardColor,
+                                style: const TextStyle(fontFamily: 'Klavika', fontWeight: FontWeight.normal),
+                              ),
+
+                              const SizedBox(width: 20.0),
+
+                              ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
                                 ),
-                                const SizedBox(width: 20.0),
-                                ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                ),
+                              ),
                                 onPressed: () => deleteOrder(context),
                                 child: const Text(
                                   'DELETE ORDER',
@@ -767,7 +820,9 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                       ),
                     ),
                   ),
+
                   const SizedBox(width: 16.0),
+                
                   Expanded(
                     flex: 1,
                     child: Container(
@@ -775,9 +830,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                         border: Border.all(color: Theme.of(context).primaryColorLight),
                         color: Theme.of(context).cardColor,
                       ),
-                      constraints: const BoxConstraints(
-                        maxHeight: 400,
-                      ),
+                      constraints: const BoxConstraints(maxHeight: 400),
                       padding: const EdgeInsets.all(12.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -790,35 +843,84 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                               fontSize: 24.0,
                             ),
                           ),
+
+                          ColoredBox(
+                            color: Theme.of(context).secondaryHeaderColor,
+                            child: SizedBox(width: 120, height: 2),
+                          ),
+
                           const SizedBox(height: 8.0),
+
+                          // list of existing comments
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
-                                border: Border.all(color: Theme.of(context).primaryColorLight),
+                                border: Border.all(color: Theme.of(context).primaryColorLight.withValues(alpha: 0.3)),
                                 color: Theme.of(context).canvasColor,
                               ),
-                              padding: const EdgeInsets.all(8.0),
-                              child: TextField(
-                                controller: _commentsController,
-                                maxLines: null,
-                                expands: true,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: 'Enter your comments here...',
-                                ),
+                              child: ListView.separated(
+                                padding: const EdgeInsets.all(8.0),
+                                itemCount: widget.order.comment.length,
+                                separatorBuilder: (context, index) => const Divider(),
+                                itemBuilder: (context, index) {
+                                  final item = widget.order.comment[index];
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "${item['name']} - ${item['date']}",
+                                        style: const TextStyle(fontFamily: 'Klavika', fontWeight: FontWeight.bold, fontSize: 12),
+                                      ),
+                                      Text(
+                                        "${item['text']}",
+                                        style: const TextStyle(fontFamily: 'Klavika', fontSize: 14),
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                             ),
                           ),
+
                           const SizedBox(height: 16.0),
+
+        
+                          const Text("Add a Comment", style: TextStyle(fontFamily: 'Klavika', fontSize: 12, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+        
+                          // name input
+                          TextField(
+                            controller: _nameController,
+                            decoration: InputDecoration(
+                              hintText: 'ex. John S',
+                              isDense: true,
+                              border: OutlineInputBorder(),
+                              hintStyle: TextStyle(fontFamily: 'Klavika'),
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 8),
+
+                          // comment Input
+                          TextField(
+                            controller: _commentsController,
+                            maxLines: 2,
+                            decoration: InputDecoration(
+                              hintText: 'Type your comment here...',
+                              isDense: true,
+                              border: OutlineInputBorder(),
+                              hintStyle: TextStyle(fontFamily: 'Klavika'),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8.0),
+
                           Align(
                             alignment: Alignment.bottomRight,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Theme.of(context).secondaryHeaderColor,
-                                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
                               ),
                               onPressed: () => saveComment(context),
                               child: Text(
@@ -834,7 +936,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                         ],
                       ),
                     ),
-                  ),
+                  )
                 ],
               ),
             ],

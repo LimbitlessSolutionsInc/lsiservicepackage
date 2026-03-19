@@ -119,7 +119,7 @@ class CreateOrderPageState extends State<CreateOrderPage>{
         journalTransferNumber: _journalTransferNumber,
         department: _department,
         status: 'Received',
-        comment: ' ',
+        comment: [],
       );
 
       await OrderService().addOrder(newOrder);
@@ -150,6 +150,8 @@ class CreateOrderPageState extends State<CreateOrderPage>{
                     child: TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
+                      hintText: 'John S',
+                      hintStyle: TextStyle(color: Theme.of(context).hintColor),
                       labelText: 'Name',
                       labelStyle: TextStyle(
                         color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).secondaryHeaderColor : Theme.of(context).highlightColor,
@@ -157,6 +159,7 @@ class CreateOrderPageState extends State<CreateOrderPage>{
                         fontWeight: FontWeight.normal,
                         fontSize: 12.0,
                       ),
+                      
                     ),
                     style: TextStyle(color: Theme.of(context).secondaryHeaderColor),
                     validator: (value) {

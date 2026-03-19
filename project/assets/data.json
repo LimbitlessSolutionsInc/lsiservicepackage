@@ -13,7 +13,13 @@
     "journalTransferNumber": "JT001",
     "department": "Computer Science",
     "status": "Completed",
-    "comment": "Add comment" 
+    "comment": [
+      {
+        "name": "Alayna E",
+        "date": "2026-03-19",
+        "text": "test comment"
+      }
+    ]
   },
   {
     "orderNumber": "002",
@@ -29,6 +35,12 @@
     "journalTransferNumber": "JT002",
     "department": "Engineering",
     "status": "In Progress",
-    "comment": "Add comment" 
+    "comment": [
+      {
+        "name": "Alayna E",
+        "date": "2026-03-19",
+        "text": "test comment"
+      }
+    ] 
   }
 ]
