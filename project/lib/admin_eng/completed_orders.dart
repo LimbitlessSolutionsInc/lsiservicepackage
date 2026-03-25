@@ -136,15 +136,6 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
   @override
   Widget build(BuildContext context) {
 
-    // goes through order list and filters completed orders into new list
-    List<NewOrder> filteredOrders = orders.where((order) {
-      if (order.status == "Completed") {
-        return true;
-      } else {
-        return false;
-      }
-    }).toList(); 
-    
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -182,12 +173,11 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
 
                             );
                           },
+
                           suggestionsBuilder: (BuildContext context, SearchController controller) async {
                             final String keyword = controller.value.text.toLowerCase();
 
-                            filteredOrders = orders
-                              .where((order) => order.name.toLowerCase().contains(keyword))
-                              .toList();
+                            filteredOrders = orders.where((order) => order.status == "Completed" && order.name.toLowerCase().contains(keyword)).toList();
 
                             return filteredOrders.map((order) {
                               return ListTile(
@@ -195,6 +185,10 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
                                 subtitle: Text("Order #: ${order.orderNumber}"),
                                 onTap: () async {
                                   controller.closeView(order.name);
+
+                                  setState(() {
+                                    selectedOrder = order;
+                                  });
 
                                   _applySortAndFilter();
                                 },

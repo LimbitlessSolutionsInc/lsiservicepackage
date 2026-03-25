@@ -8,9 +8,8 @@ import 'create_order/create_order.dart';
 import 'css/css.dart';
 
 ThemeData currentTheme = CSS.lightTheme;
-int currentCount = OrderService().orders.length;
 
-int orderNumber = (currentCount + 1);
+int orderLength = 0;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +21,7 @@ void main() async {
     debugPrint("Error initializing OrderService: $e");
   }
 
+  orderLength = OrderService().orders.length;
 
   runApp(const MyApp());
 }

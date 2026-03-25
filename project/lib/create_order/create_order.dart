@@ -8,7 +8,7 @@ import 'package:service_package/admin_eng/models/data.dart';
 import 'package:service_package/admin_eng/services/order_service.dart';
 
 class CreateOrderPage extends StatefulWidget{
-  const CreateOrderPage( { super.key }) ;
+  const CreateOrderPage({ super.key }) ;
 
   @override
   CreateOrderPageState createState() => CreateOrderPageState();
@@ -40,6 +40,7 @@ class CreateOrderPageState extends State<CreateOrderPage>{
   double _rate = 0.0;
   int _quantity = 1;
   List<dynamic> rates = [];
+  int nextOrderNumber = orderLength + 1;
 
   void _loadRates() 
   {
@@ -97,7 +98,7 @@ class CreateOrderPageState extends State<CreateOrderPage>{
   void _submitOrder(BuildContext context) async {
     if (_formKey.currentState?.validate() ?? false) {
 
-      String formattedOrderNumber = orderNumber.toString().padLeft(3, '0');
+      String formattedOrderNumber = nextOrderNumber.toString().padLeft(3, '0');
       double estimatedPrice = _volume * _rate * _quantity;
 
       String? displayPath = _filePath;
@@ -120,12 +121,12 @@ class CreateOrderPageState extends State<CreateOrderPage>{
         department: _department,
         status: 'Received',
         comment: [],
+        cancelRequested: false
       );
 
       await OrderService().addOrder(newOrder);
-      orderNumber++;
 
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => CreateSubmitPage()),
       );
@@ -765,7 +766,17 @@ class CreateSubmitPageState extends State<CreateSubmitPage> {
   Widget build(BuildContext context) {
     final recentOrder = currentOrders.last;
 
-    return Scaffold(
+    String displayNum = recentOrder.orderNumber.padLeft(3, '0');
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      },
+
+      child: Scaffold(
       appBar: AppBar(
         title: Text(
           'Order Confirmation',
@@ -808,7 +819,7 @@ class CreateSubmitPageState extends State<CreateSubmitPage> {
                   ),
 
                   Text(
-                    'Order #${recentOrder.orderNumber}',
+                    'Order #$displayNum',
                     style: TextStyle(
                       fontSize: 24,
                       color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).secondaryHeaderColor : Theme.of(context).secondaryHeaderColor,
@@ -847,6 +858,7 @@ class CreateSubmitPageState extends State<CreateSubmitPage> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

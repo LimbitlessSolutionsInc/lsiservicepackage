@@ -277,9 +277,7 @@ class AdminServicesState extends State<AdminServices> {
                           suggestionsBuilder: (BuildContext context, SearchController controller) async {
                             final String keyword = controller.value.text.toLowerCase();
 
-                            filteredOrders = orders
-                              .where((order) => order.name.toLowerCase().contains(keyword))
-                              .toList();
+                            filteredOrders = orders.where((order) => order.status != "Completed" && order.name.toLowerCase().contains(keyword)).toList();
 
                             return filteredOrders.map((order) {
                               return ListTile(
@@ -516,7 +514,6 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
     super.initState();
 
     selectedStatus = widget.order.status; 
-
   }
 
   void deleteOrder(BuildContext context) {

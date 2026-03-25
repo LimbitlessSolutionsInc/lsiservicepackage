@@ -532,18 +532,22 @@ class TrackOrderPageState extends State<TrackOrderPage> {
   }
 
   void _cancelOrder(BuildContext context) {
-  final String orderNumber = order!.orderNumber;
+    final String orderNumber = order!.orderNumber;
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text('Order #$orderNumber cancellation requested.'),
-      duration: const Duration(seconds: 3),
-    ),
-  );
-  Future.delayed(const Duration(seconds: 1), () {
-    Navigator.of(context).pushReplacementNamed('/home'); 
-  });
-}
+    setState(() {
+      order!.cancelRequested = true;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Order #$orderNumber cancellation requested.'),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+    Future.delayed(const Duration(seconds: 1), () {
+      Navigator.of(context).pushReplacementNamed('/home'); 
+    });
+  }
 
   Widget _buildOrderStatus() {
     return Container(

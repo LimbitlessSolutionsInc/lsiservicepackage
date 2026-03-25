@@ -19,7 +19,8 @@
         "date": "2026-03-19",
         "text": "test comment"
       }
-    ]
+    ],
+    "cancelRequested": false
   },
   {
     "orderNumber": "002",
@@ -41,6 +42,7 @@
         "date": "2026-03-19",
         "text": "test comment"
       }
-    ] 
+    ],
+    "cancelRequested": false
   }
 ]

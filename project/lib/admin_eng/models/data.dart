@@ -2,6 +2,16 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'data.g.dart'; 
 
+/*
+  This file uses serialization, so any changes made to it you need to run an update in the terminal 
+  to update the data.g.dart file. 
+
+  Once changes are made and the data.dart file is saved, run 
+  this -> 'dart run build_runner build --delete-conflicting-outputs'
+
+  it will update all the models and then you can continue without worrying :)
+*/
+
 @JsonSerializable()
 class NewOrder {
   final String orderNumber;
@@ -20,6 +30,7 @@ class NewOrder {
   String status;
   final List<Map<String, dynamic>> comment;
   String? successMessage;
+  bool cancelRequested;
 
   NewOrder({
     required this.orderNumber,
@@ -38,6 +49,7 @@ class NewOrder {
     required this.comment,
     this.successMessage,
     this.imagePath,
+    required this.cancelRequested,
   });
 
   factory NewOrder.fromJson(Map<String, dynamic> json) => _$NewOrderFromJson(json); 

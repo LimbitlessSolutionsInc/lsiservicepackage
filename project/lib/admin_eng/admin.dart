@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:service_package/admin_eng/cancellation_requests.dart';
 import '../css/css.dart';
 
 import 'completed_orders.dart';
@@ -143,7 +144,10 @@ class AdminPageState extends State<AdminPage> {
 
                           child: ElevatedButton(
                             onPressed: () {
-                              
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const CancellationRequestsPage()),
+                              );
                             }, 
 
                             style: ButtonStyle(

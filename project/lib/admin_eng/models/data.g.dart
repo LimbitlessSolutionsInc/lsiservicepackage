@@ -25,6 +25,7 @@ NewOrder _$NewOrderFromJson(Map<String, dynamic> json) => NewOrder(
           .toList(),
       successMessage: json['successMessage'] as String?,
       imagePath: json['imagePath'] as String?,
+      cancelRequested: json['cancelRequested'] as bool,
     );
 
 Map<String, dynamic> _$NewOrderToJson(NewOrder instance) => <String, dynamic>{
@@ -44,4 +45,5 @@ Map<String, dynamic> _$NewOrderToJson(NewOrder instance) => <String, dynamic>{
       'status': instance.status,
       'comment': instance.comment,
       'successMessage': instance.successMessage,
+      'cancelRequested': instance.cancelRequested,
     };
