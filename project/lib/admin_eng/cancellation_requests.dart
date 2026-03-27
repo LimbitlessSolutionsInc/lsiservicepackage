@@ -19,6 +19,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
   List<bool> expandedState = []; 
   List<NewOrder> filteredOrders = []; 
   NewOrder? selectedOrder;
+  final List<bool> _isSelected = [false, false];
 
   Widget getProcessImage(String process) {
     switch (process) {
@@ -94,9 +95,9 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) { 
 
-     List<NewOrder> filteredOrders = orders.where((order) {
+    List<NewOrder> filteredOrders = orders.where((order) {
       if (order.cancelRequested == true) {
         return true;
       } else {
@@ -253,7 +254,9 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
 
           if(selectedOrder != null) 
             Expanded(
-               child: Padding(
+               child: ListView(
+                children:[
+                  Padding(
                 padding: const EdgeInsets.all(24), 
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center, 
@@ -297,22 +300,119 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                     
                               const SizedBox(width: 350.0),
 
-                              ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 25, vertical: 25),
+                                margin: EdgeInsets.symmetric(horizontal: 250, vertical: 25),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).secondaryHeaderColor,
+                                  borderRadius: BorderRadius.circular(15),
                                 ),
-                              ),
-                                onPressed: () => deleteOrder(context),
-                                child: const Text(
-                                  'DELETE ORDER',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      'Accept Cancellation Request?',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Klavika',
+                                      ),
+                                    ),
+
+                                    
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        ToggleButtons(
+                                          renderBorder: false, 
+                                          fillColor: Colors.transparent,
+                                          splashColor: Colors.transparent,
+                                          hoverColor: Colors.transparent,
+
+                                          isSelected: _isSelected,
+                                          onPressed: (int index) {
+                                            setState(() {
+                                              for (int i = 0; i < _isSelected.length; i++) {
+                                                _isSelected[i] = i == index;
+                                              }
+                                            });
+                                          },
+                                          children: [
+                                            Container(
+                                              margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                              padding: EdgeInsets.all(10),
+                                              decoration: BoxDecoration(
+                                                color: _isSelected[0] ? Colors.redAccent : Theme.of(context).splashColor,
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                'Reject',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontFamily: 'Klavika',
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
+
+                                            Container(
+                                              margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                              padding: EdgeInsets.all(10),
+                                              decoration: BoxDecoration(
+                                                color: _isSelected[1] ? Colors.greenAccent : Theme.of(context).splashColor,
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                'Accept',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontFamily: 'Klavika',
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+
+                                    Container(
+                                      margin: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: ColoredBox(
+                                      color: Theme.of(context).primaryColorLight,
+                                      child: SizedBox(
+                                        width: 300, height: 100,
+                                      ),
+                                    ),
+                                    ),
+
+                                    const SizedBox(height: 15),
+
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Theme.of(context).splashColor,
+                                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        
+                                      },
+                                      child: Text(
+                                        'SUBMIT',
+                                        style: TextStyle(
+                                          color: Theme.of(context).primaryColorDark,
+                                          fontFamily: 'Klavika',
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -324,7 +424,10 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
       
                   ],
                 ),
-              ),   
+              ), 
+                ],
+               ),
+               
             ),
         ],
       ),
