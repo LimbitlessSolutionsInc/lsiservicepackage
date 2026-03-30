@@ -125,6 +125,7 @@ class CreateOrderPageState extends State<CreateOrderPage>{
       );
 
       await OrderService().addOrder(newOrder);
+      nextOrderNumber++;
 
       Navigator.pushReplacement(
         context,

@@ -20,6 +20,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
   List<NewOrder> filteredOrders = []; 
   NewOrder? selectedOrder;
   final List<bool> _isSelected = [false, false];
+  final TextEditingController _commentsController = TextEditingController();
 
   Widget getProcessImage(String process) {
     switch (process) {
@@ -39,6 +40,13 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
     super.initState();
 
     loadOrders();
+  }
+
+  @override
+  void dispose() {
+    _commentsController.dispose();
+
+    super.dispose();
   }
 
   void loadOrders() {
@@ -67,31 +75,55 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
     );
   }
 
-  void deleteOrder(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Delete'),
-          content: const Text('Are you sure you want to delete this order?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context), 
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                //await OrderService().deleteOrder(widget.orders.orderNumber); // deletes order from the JSON
-
-                Navigator.pop(context);
-                Navigator.pop(context, 'delete'); 
-              },
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
+  void _submitResponse(BuildContext context, NewOrder selectedOrder) async {
+  if (_commentsController.text.trim().isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter a comment.')),
     );
+    return;
+  }
+
+  final Map<String, dynamic> newEntry = {
+    'name': 'Cancellation Test',
+    'date': DateTime.now().toString().split(' ')[0],
+    'text': _commentsController.text.trim(),
+  };
+
+  if (_isSelected[0] == true || _isSelected[1] == true) {
+    setState(() {
+      // update the order data
+      selectedOrder.cancelRequested = false;
+      if (_isSelected[1] == true) {
+        selectedOrder.status = 'Cancelled';
+      }
+      selectedOrder.comment.add(newEntry);
+
+      // remove the selection
+      this.selectedOrder = null; 
+
+      // reset UI
+      _commentsController.clear();
+      _isSelected[0] = false;
+      _isSelected[1] = false;
+    });
+
+    // updates the JSON and then shows confirmation message
+    try {
+      await OrderService().updateOrder(selectedOrder);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Response submitted successfully!')),
+        );
+      }
+    } catch (e) {
+      print("Error saving comment: $e");
+    }
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please pick a response.')),
+    );
+  }
   }
 
   @override
@@ -377,18 +409,18 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                                       ],
                                     ),
 
-                                    Container(
-                                      margin: EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
+                                    TextField(
+                                      controller: _commentsController,
+                                      maxLines: 4,
+                                      decoration: InputDecoration(
+                                        hintText: 'Type your comment here...',
+                                        isDense: true,
+                                        border: OutlineInputBorder(),
+                                        hintStyle: TextStyle(fontFamily: 'Klavika'),
+                                        filled: true,
+                                        fillColor: Theme.of(context).primaryColorLight,
                                       ),
-                                      child: ColoredBox(
-                                      color: Theme.of(context).primaryColorLight,
-                                      child: SizedBox(
-                                        width: 300, height: 100,
-                                      ),
-                                    ),
-                                    ),
+                                    ),  
 
                                     const SizedBox(height: 15),
 
@@ -400,9 +432,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                                           borderRadius: BorderRadius.circular(8.0),
                                         ),
                                       ),
-                                      onPressed: () {
-                                        
-                                      },
+                                      onPressed: () => _submitResponse(context, selectedOrder!),
                                       child: Text(
                                         'SUBMIT',
                                         style: TextStyle(

@@ -210,7 +210,7 @@ class AdminServicesState extends State<AdminServices> {
 
   void _applySortAndFilter() { // sorts list of current orders by the different 'sort by' criteria 
     setState(() {
-      filteredOrders = orders.where((order) => order.status != "Completed").toList();
+      filteredOrders = orders.where((order) => order.status != "Completed" && order.status != "Cancelled").toList();
 
       filteredOrders.sort((a, b) {
         switch (sortBy) {
@@ -762,7 +762,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                             ),
                           ),
 
-                            const SizedBox(height: 16.0),
+                          const SizedBox(height: 16.0),
 
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
