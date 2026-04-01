@@ -126,7 +126,7 @@ class AdminPageState extends State<AdminPage> {
                             ),
 
                             child: Text(
-                              'COMPLETED ORDERS',
+                              'ARCHIVED ORDERS',
                               style: TextStyle(
                                 color: Theme.of(context).primaryColorLight,
                                 fontFamily: 'Klavika',

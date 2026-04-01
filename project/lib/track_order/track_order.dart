@@ -629,6 +629,16 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                   _buildStatusDivider(true),
                   _buildStatusContainer('Completed', true, isLarge: false),
                 ],
+
+                if(order!.status == 'Cancelled') ...[
+                  _buildStatusContainer('Cancelled', true, isLarge: false),
+                  _buildStatusDivider(false),
+                  _buildStatusContainer('In Progress', false, isLarge: false),
+                  _buildStatusDivider(false),
+                  _buildStatusContainer('Delivered', false, isLarge: false),
+                  _buildStatusDivider(false),
+                  _buildStatusContainer('Completed', false, isLarge: false),
+                ],
               ],
             ),
           ),

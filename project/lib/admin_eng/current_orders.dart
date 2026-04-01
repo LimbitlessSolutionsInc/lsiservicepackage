@@ -73,7 +73,7 @@ class AdminServicesState extends State<AdminServices> {
 
       // filter and calculate dates after checking and confirming if there's data
       filteredOrders = orders.where((order) {
-        return order.status != 'Completed';
+        return order.status != 'Completed' && order.status != 'Cancelled';
       }).toList();
 
       if (filteredOrders.isNotEmpty) {
@@ -395,7 +395,7 @@ class AdminServicesState extends State<AdminServices> {
                             });
 
                             filteredOrders = orders.where((order) {
-                              if (order.status == "Completed") {
+                              if (order.status == "Completed" && order.status == "Cancelled") {
                                 return false;
                               }
                               return true;
@@ -443,6 +443,17 @@ class AdminServicesState extends State<AdminServices> {
                                     ],
                                   ),
                                 ),
+
+                                if (order.cancelRequested == true)
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 8.0), 
+                                    width: 35,
+                                    alignment: Alignment.centerRight,
+                                    child: const Icon(
+                                      Icons.warning_rounded,
+                                      color: Colors.yellow,
+                                    ),
+                                  ), 
                               ],
                             ),
                           ),

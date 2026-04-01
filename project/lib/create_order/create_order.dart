@@ -33,9 +33,6 @@ class CreateOrderPageState extends State<CreateOrderPage>{
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _journalNumController = TextEditingController();
   final TextEditingController _departmentController = TextEditingController();
-  final String _journalTransferNumber = '';
-  final String _department = '';
-  final String _dateSubmitted = '';
   final double _volume = 100.0;
   double _rate = 0.0;
   int _quantity = 1;
@@ -108,7 +105,7 @@ class CreateOrderPageState extends State<CreateOrderPage>{
 
       final newOrder = NewOrder(
         orderNumber: formattedOrderNumber,
-        name: _nameController.text,
+        name: _nameController.text.trim(),
         process: _selectedProcess,
         unit: _selectedUnit,
         type: _selectedType,
@@ -116,16 +113,18 @@ class CreateOrderPageState extends State<CreateOrderPage>{
         rate: _rate,
         estimatedPrice: estimatedPrice,
         filePath: displayPath ?? '',
-        dates: {'Submitted': _dateSubmitted},
-        journalTransferNumber: _journalTransferNumber,
-        department: _department,
+        dates: {'Submitted': DateTime.now().toString().split(' ')[0]},
+        journalTransferNumber: _journalNumController.text.trim(),
+        department: _departmentController.text.trim(),
         status: 'Received',
         comment: [],
         cancelRequested: false
       );
 
       await OrderService().addOrder(newOrder);
-      nextOrderNumber++;
+      setState(() {
+        orderLength++;
+      });
 
       Navigator.pushReplacement(
         context,
@@ -143,13 +142,13 @@ class CreateOrderPageState extends State<CreateOrderPage>{
               children: [
                 Container(
                   height: 80.0,
-                    padding: const EdgeInsets.all(5.0),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
+                  padding: const EdgeInsets.all(5.0),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
                     color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).tabBarTheme.indicatorColor : Theme.of(context).splashColor,
                     borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: TextFormField(
+                  ),
+                  child: TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
                       hintText: 'John S',
@@ -176,13 +175,14 @@ class CreateOrderPageState extends State<CreateOrderPage>{
                 const SizedBox(height: 16.0),
                 Container(
                   height: 80.0,
-                    padding: const EdgeInsets.all(5.0),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
+                  padding: const EdgeInsets.all(5.0),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
                     color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).tabBarTheme.indicatorColor : Theme.of(context).splashColor,
                     borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: TextFormField(
+                  ),
+
+                  child: TextFormField(
                     controller: _journalNumController,
                     decoration: InputDecoration(
                       labelText: 'Journal Transfer Number',
