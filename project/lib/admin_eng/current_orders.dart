@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../css/css.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'models/data.dart';
 import 'package:service_package/admin_eng/services/order_service.dart';
@@ -406,21 +407,22 @@ class AdminServicesState extends State<AdminServices> {
                           _applySortAndFilter();
                         },
                         child: Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12.0),
                             child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center, 
                               children: [
-                                Flexible(
-                                  child: SizedBox(
-                                    width: 40,
-                                    child: getProcessImage(order.process),
-                                  ),
+                                SizedBox(
+                                  width: 40,
+                                  child: getProcessImage(order.process),
                                 ),
-                                const SizedBox(width: 8.0),
+
+                                const SizedBox(width: 12.0),
+
                                 Expanded(
                                   child: Column(
+                                    mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
@@ -432,28 +434,28 @@ class AdminServicesState extends State<AdminServices> {
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
+
                                       Text(
                                         'Status: ${order.status}',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontFamily: 'Klavika',
-                                          fontWeight: FontWeight.normal,
-                                        ),
+                                        style: const TextStyle(fontFamily: 'Klavika'),
                                       ),
                                     ],
                                   ),
                                 ),
 
-                                if (order.cancelRequested == true)
-                                  Container(
-                                    margin: const EdgeInsets.only(left: 8.0), 
-                                    width: 35,
-                                    alignment: Alignment.centerRight,
-                                    child: const Icon(
-                                      Icons.warning_rounded,
-                                      color: Colors.yellow,
+                                if (order.status == 'Cancellation Pending' || order.cancelRequested == true)
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 16.0), 
+                                    child: Tooltip(
+                                      message: 'User requested cancellation',
+                                      child: Icon(
+                                        Icons.warning_amber_rounded, 
+                                        color: Colors.orange,
+                                        size: 24,
+                                      ),
                                     ),
-                                  ), 
+
+                                  ),
                               ],
                             ),
                           ),
@@ -518,7 +520,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
   final TextEditingController _commentsController = TextEditingController() ;
   final TextEditingController _nameController = TextEditingController();
   List<String> savedComments = []; 
-  final List<String> statuses = ['Received', 'In Progress', 'Delivered', 'Completed']; 
+  final List<String> statuses = ['Received', 'In Progress', 'Delivered', 'Completed', 'Cancellation Pending']; 
 
   @override
   void initState() {
@@ -607,6 +609,20 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
       }
     } catch (e) {
       print("Error saving comment: $e");
+    }
+  }
+
+  Future<void> _openFile(String path) async {
+    final Uri url = Uri.parse(path);
+  
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open the file. Check the path.')),
+        );
+      }
     }
   }
 
@@ -757,6 +773,37 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                                     fontSize: 17.0
                                   ),
                                 ),
+
+                                const SizedBox(height: 16.0),
+                                const Text(
+                                  'File Attachment:',
+                                  style: TextStyle(
+                                    fontFamily: 'Klavika',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16.0,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 8.0),
+
+                                if (widget.order.filePath.isNotEmpty)
+                                  ElevatedButton.icon(
+                                    onPressed: () => _openFile(widget.order.filePath),
+                                    icon: const Icon(Icons.file_present, color: Colors.white),
+                                    label: Text(
+                                      'OPEN FILE FOR PRINTING',
+                                      style: TextStyle(color: Colors.white, fontFamily: 'Klavika'),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blueGrey,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                  )
+                                else
+                                  const Text(
+                                    'No file attached',
+                                    style: TextStyle(fontFamily: 'Klavika', color: Colors.grey, fontStyle: FontStyle.italic),
+                                  ),
 
                                 if (updatedStatusMessage != null) ...[
                                   const SizedBox(height: 8.0),

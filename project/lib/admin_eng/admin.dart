@@ -4,6 +4,7 @@ import '../css/css.dart';
 
 import 'completed_orders.dart';
 import 'current_orders.dart';
+import 'package:service_package/admin_eng/services/order_service.dart';
 
 ThemeData currentTheme = CSS.lightTheme;
 
@@ -15,11 +16,13 @@ class AdminPage extends StatefulWidget {
 }
 
 class AdminPageState extends State<AdminPage> {
+  int get cancellationCount {
+    return OrderService().orders.where((o) => o.cancelRequested == true).length;
+  }
 
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-    //double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
@@ -140,32 +143,51 @@ class AdminPageState extends State<AdminPage> {
 
                         SizedBox(
                           height: 50,
-                          width: 180,
-
+                          width: 240, 
+                          
                           child: ElevatedButton(
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => const CancellationRequestsPage()),
-                              );
-                            }, 
-
-                            style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
-                              side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
-                              shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                              )),
+                              ).then((_) {
+                                setState(() {});
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).secondaryHeaderColor,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
                             ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'CANCELLATION REQUESTS',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'Klavika',
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
 
-                            child: Text(
-                              'CANCELLATION REQUESTS',
-                              style: TextStyle(
-                                color: Theme.of(context).primaryColorLight,
-                                fontFamily: 'Klavika',
-                                fontWeight: FontWeight.bold
-                              ),
-                              textAlign: TextAlign.center,
+                                const SizedBox(width: 10),
+
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: cancellationCount > 0 ? Colors.red : Colors.grey,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '$cancellationCount',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),

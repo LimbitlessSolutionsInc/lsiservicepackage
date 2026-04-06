@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 
 import '../models/data.dart';
 
-class OrderService {
+class OrderService with ChangeNotifier{
   static final OrderService _instance = OrderService._internal();
   factory OrderService() => _instance;
   OrderService._internal();
@@ -41,9 +42,22 @@ class OrderService {
     }
   }
 
+  Future<void> requestCancellation(String orderNumber) async {
+    int index = _orders.indexWhere((o) => o.orderNumber == orderNumber);
+    
+    if (index != -1) {
+      _orders[index].status = "Cancellation Pending"; 
+      
+      await _saveToDisk();
+  
+      notifyListeners(); 
+    }
+  }
+
   Future<void> addOrder(NewOrder newOrder) async {
     _orders.add(newOrder);
     await _saveToDisk(); // Triggers the save
+    notifyListeners();
   }
 
   // This replaces all the file/directory logic
@@ -64,10 +78,13 @@ class OrderService {
       _orders[index] = updatedOrder;
       await _saveToDisk(); // saves the updated list
     }
+
+    notifyListeners();
   }
 
   Future<void> deleteOrder(String orderNumber) async {
     _orders.removeWhere((o) => o.orderNumber == orderNumber);
     await _saveToDisk(); // saves the updated list
+    notifyListeners();
   }
 }

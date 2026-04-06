@@ -531,22 +531,44 @@ class TrackOrderPageState extends State<TrackOrderPage> {
     );
   }
 
-  void _cancelOrder(BuildContext context) {
+  void _cancelOrder(BuildContext context) async {
+    if (order == null) return;
+
     final String orderNumber = order!.orderNumber;
 
     setState(() {
       order!.cancelRequested = true;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Order #$orderNumber cancellation requested.'),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    try {
+    await OrderService().requestCancellation(orderNumber);
+    await OrderService().updateOrder(order!); 
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Order #$orderNumber cancellation requested.'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+
     Future.delayed(const Duration(seconds: 1), () {
-      Navigator.of(context).pushReplacementNamed('/home'); 
+      if (context.mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
     });
+    } catch (e) {
+      setState(() {
+        order!.cancelRequested = false;
+      });
+    
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to request cancellation. Please try again.')),
+        );
+      }
+    }
   }
 
   Widget _buildOrderStatus() {

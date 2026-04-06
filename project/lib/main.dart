@@ -74,6 +74,13 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
+  Widget _buildInfoCard(String imagePath, String text) {
+    return HoverImageTile(
+      assetPath: imagePath,
+      desc: text,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -111,49 +118,40 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Center(
               child: Row(
                 children: [
-                  SizedBox( // left side of the home screen
+                  SizedBox( // left side of the screen
                     height: screenHeight - kToolbarHeight,
                     width: screenWidth / 3,
-                    child: SingleChildScrollView(
-                      child: SizedBox(
-                        height: screenHeight - kToolbarHeight,
-                        child: Container( // container for the color on the side of the screen
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).secondaryHeaderColor,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.5),
-                                blurRadius: 10,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).secondaryHeaderColor,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            blurRadius: 10,
+                            offset: const Offset(0, 10),
                           ),
-                        
-                          height: 200,
-                          child: const Column( // all info for the machines
-                            children: [
-                              HoverImageTile( // class for the machine info cards
-                                assetPath: 'assets/images/emb_printer_3d_lg.png',
-                                desc: 'this is a test desc for 3d printing',
-                              ),
-
-                              HoverImageTile(
-                                assetPath: 'assets/images/emb_mill_lg.png',
-                                desc: 'this is a test desc for milling'
-                              ),
-
-                              HoverImageTile(
-                                assetPath: 'assets/images/emb_thermoform_lg.png',
-                                desc: 'this is a test desc for thermoforming',
-                              ),
-
-                            ],
+                        ],
+                      ),
+                      child: ListView(
+                        shrinkWrap: true, 
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        children: [
+                          Center(
+                            child: _buildInfoCard('assets/images/emb_printer_3d_lg.png', '3D Printing'),
                           ),
-                        ),
+                          const SizedBox(height: 15),
+                          Center(
+                            child: _buildInfoCard('assets/images/emb_mill_lg.png', 'Milling'),
+                          ),
+                          const SizedBox(height: 15),
+                          Center(
+                            child: _buildInfoCard('assets/images/emb_thermoform_lg.png', 'Thermoforming'),
+                          ),
+                        ],
                       ),
                     ),
-                    
                   ),
+
                   Expanded( // right side of the homepage
                     flex: 2,
                     child: Column(
