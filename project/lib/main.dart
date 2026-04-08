@@ -134,10 +134,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       child: ListView(
                         shrinkWrap: true, 
-                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                         children: [
                           Center(
-                            child: _buildInfoCard('assets/images/emb_printer_3d_lg.png', '3D Printing'),
+                            child: _buildInfoCard('assets/images/emb_printer_3d_lg.png', 'The Stratasys 3D printers use additive manufacturing to produce models designed in Autodesk Fusion by building them layer by layer in ABS plastic. During printing, a dissolvable support material is used to stabilize overhangs and complex geometries; this material can later be removed by dissolving it in a basic solution tank. These 3D printers are primarily used to produce patient-specific sockets and are also utilized by the Research and Development team to develop a variety of products that support Limbitless Solutions beyond the bionic arm.'),
                           ),
                           const SizedBox(height: 15),
                           Center(
@@ -145,7 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           const SizedBox(height: 15),
                           Center(
-                            child: _buildInfoCard('assets/images/emb_thermoform_lg.png', 'Thermoforming'),
+                            child: _buildInfoCard('assets/images/emb_thermoform_lg.png', 'The Formech M508DT is used to thermoform an ABS plastic sheet by heating it to its glass transition temperature and applying vacuum pressure to conform the softened material over a 3D-printed buck. This process allows the ABS sheet to accurately replicate the geometry of the mold. Once formed and cooled, the plastic is removed and trimmed to achieve the desired final shape and appearance. This machine is used to create the magnetic sleeves and palm plates for the bionic arms.'),
                           ),
                         ],
                       ),
@@ -340,45 +340,49 @@ class HoverImageTile extends StatefulWidget {
 class _HoverImageTileState extends State<HoverImageTile> {
   
   @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Stack(
-        children: [
-          Container( // function for the cards with info in them
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 5,
-                  offset: const Offset(7, 7),
-                ),
-              ],
+  @override
+Widget build(BuildContext context) {
+  return Stack(
+    children: [
+      Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 5,
+              offset: const Offset(7, 7),
             ),
+          ],
+        ),
+        
+        width: 300, 
+        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.all(10),
+        
+        child: Column(
+          mainAxisSize: MainAxisSize.min, 
+          children: <Widget>[
+            Image.asset(widget.assetPath, width: 175, height: 175),
+            
+            const SizedBox(height: 10), 
 
-            height: 250,
-            width: 300,
-            padding: const EdgeInsets.all(10),
-            margin: const EdgeInsets.all(10),
-           
-            child: Column(
-              children: <Widget>[
-                Image.asset(widget.assetPath, width: 175, height: 175),
-
-                Text(
-                  widget.desc,
-                  style: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
-                    fontSize: 15,
-                    fontFamily: 'Klavika',
-                  ),
-                ),
-              ],
+            Text(
+              widget.desc,
+              textAlign: TextAlign.center, 
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Theme.of(context).primaryColorLight 
+                    : Theme.of(context).primaryColorDark,
+                fontSize: 15,
+                fontFamily: 'Klavika',
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    );
-  }
+    ],
+  );
+}
 }

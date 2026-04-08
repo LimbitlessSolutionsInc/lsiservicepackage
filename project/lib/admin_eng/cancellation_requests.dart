@@ -62,13 +62,41 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(label, style: TextStyle(color: Theme.of(context).secondaryHeaderColor, fontWeight: FontWeight.bold, fontSize: 16)),
-          SizedBox(width: 25),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 16)),
+
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12.0), 
+              child: Text(
+                label,
+                textAlign: TextAlign.end,
+                style: TextStyle(
+                  color: Theme.of(context).secondaryHeaderColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  fontFamily: 'Klavika',
+                ),
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12.0), 
+              child: Text(
+                value,
+                textAlign: TextAlign.start,
+                style: TextStyle(
+                  fontWeight: FontWeight.normal, 
+                  fontSize: 16,
+                  fontFamily: 'Klavika',
+                  color: Theme.of(context).primaryColorDark,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -93,6 +121,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
         currentOrder.cancelRequested = false;
         if (_isSelected[1]) {
           currentOrder.status = 'Cancelled';
+          currentOrder.dates['Cancelled'] = DateTime.now().toString().split(' ')[0];
         }
         currentOrder.comment.add(newEntry);
 
@@ -179,6 +208,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                     style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'Klavika')),
                   const SizedBox(height: 4),
                   ColoredBox(color: Theme.of(context).primaryColor, child: const SizedBox(height: 2, width: 400)),
+                  const SizedBox(height: 10),
                   
                   _buildInfoRow('Order #:', currentOrder.orderNumber),
                   _buildInfoRow('Name:', currentOrder.name),
@@ -210,7 +240,9 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                           isSelected: _isSelected,
                           onPressed: (int index) {
                             setState(() {
-                              for (int i = 0; i < _isSelected.length; i++) _isSelected[i] = i == index;
+                              for (int i = 0; i < _isSelected.length; i++) {
+                                _isSelected[i] = i == index;
+                              }
                             });
                           },
                           children: [
@@ -235,7 +267,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).splashColor),
                           onPressed: () => _submitResponse(context, currentOrder),
-                          child: const Text('SUBMIT', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Klavika')),
+                          child: Text('SUBMIT', style: TextStyle(color: Theme.of(context).primaryColorDark, fontWeight: FontWeight.bold, fontFamily: 'Klavika')),
                         ),
                       ],
                     ),
@@ -251,7 +283,6 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
 
   Widget _buildToggleTab(String label, int index) {
     return Container(
-      margin: const EdgeInsets.all(10),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: _isSelected[index] 
@@ -259,7 +290,10 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
             : Theme.of(context).splashColor,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Klavika', color: Colors.black)),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Klavika', color: Colors.black)),
+      ),
     );
   }
 
@@ -353,20 +387,20 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
               child: Center(
                 child: Stack(
                   alignment: Alignment.center,
-                children: [
-                  _buildOrderDetailView(selectedOrder!),
+                  children: [
+                    _buildOrderDetailView(selectedOrder!),
 
-                  if (isMobile)
-                    Positioned(
-                      top: 10,
-                      left: 10,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: () => setState(() => selectedOrder = null),
+                    if (isMobile)
+                      Positioned(
+                        top: 10,
+                        left: 10,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: () => setState(() => selectedOrder = null),
+                        ),
                       ),
-                    ),
-                ],
-              ),
+                  ],
+                ),
               ),
             ),
         ],

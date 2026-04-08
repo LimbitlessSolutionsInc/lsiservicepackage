@@ -20,7 +20,10 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
   List<NewOrder> filteredOrders = []; 
   NewOrder? selectedOrder;
 
-  Widget getProcessImage(String process) {
+  List<NewOrder> completedOrders = [];
+  List<NewOrder> archivedOrders = [];
+
+  Widget getProcessImage(String? process) {
     switch (process) {
       case 'Thermoforming':
         return const Image(image: AssetImage('assets/icons/emb_thermoform_sm.png'));
@@ -42,10 +45,12 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
 
   void loadOrders() {
     final List<NewOrder> loadedOrders = OrderService().orders;
-
     setState(() {
       orders = loadedOrders;
-
+   
+      completedOrders = orders.where((o) => o.status == "Completed").toList();
+      archivedOrders = orders.where((o) => o.status == "Cancelled" || o.status == "Archived").toList();
+    
       expandedState = List<bool>.filled(orders.length, false);
     });
   }
@@ -70,7 +75,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
     });
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(String label, String? value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -80,7 +85,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
             width: 150,
             child: Text(label, style: TextStyle(color: Theme.of(context).secondaryHeaderColor, fontWeight: FontWeight.bold, fontSize: 16)),
           ),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 16)),
+          Text(value ?? 'N/A', style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 16)),
         ],
       ),
     );
@@ -133,20 +138,207 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildOrderListView(List<NewOrder> ordersToList) {
+    if (ordersToList.isEmpty) {
+      return const Center(child: Text("No orders found"));
+    }
 
-    return Scaffold(
+    return ListView.builder(
+      itemCount: ordersToList.length,
+      itemBuilder: (context, index) {
+        NewOrder order = ordersToList[index];
+        return GestureDetector(
+          onTap: () => setState(() => selectedOrder = order),
+
+          child: Card(
+            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Flexible(
+                    child: SizedBox(
+                      width: 40,
+                      child: getProcessImage(order.process),
+                    ),
+                  ),
+
+                  const SizedBox(width: 8.0),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          order.name,
+                          style: const TextStyle(
+                            fontFamily: 'Klavika',
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+
+                        Text(
+                          order.dates['Completed'] ?? "Status: ${order.status}",
+                          style: const TextStyle(
+                            fontFamily: 'Klavika',
+                            fontWeight: FontWeight.normal,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOrderDetailView(NewOrder currentOrder) {
+    bool isMobile = MediaQuery.of(context).size.width < 800;
+
+    Widget detailsCard = Card(
+    elevation: 4,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Text(
+            'Order Details: ${currentOrder.name}',
+            style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'Klavika'),
+          ),
+          const SizedBox(height: 4),
+          ColoredBox(
+            color: Theme.of(context).primaryColor,
+            child: const SizedBox(height: 2, width: 300),
+          ),
+          const SizedBox(height: 24),
+          _buildInfoRow('Order #:', currentOrder.orderNumber),
+          _buildInfoRow('Journal Transfer:', currentOrder.journalTransferNumber),
+          _buildInfoRow('Department:', currentOrder.department),
+          _buildInfoRow('Process:', currentOrder.process),
+          _buildInfoRow('Unit:', currentOrder.unit),
+          _buildInfoRow('Type:', currentOrder.type),
+          _buildInfoRow('Quantity:', currentOrder.quantity.toString()),
+          _buildInfoRow('Price:', "\$${currentOrder.estimatedPrice.toStringAsFixed(2)}"),
+
+          const SizedBox(height: 30),
+          const Text('Comments', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, fontFamily: 'Klavika')),
+          const Divider(),
+          _buildCommentsList(currentOrder.comment),
+        ],
+      ),
+    ),
+  );
+
+  Widget timelineCard = Card(
+    elevation: 2,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          const Text('Order Timeline', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'Klavika')),
+          const SizedBox(height: 10),
+          _buildStatusContainer('Received', currentOrder.dates['Submitted'] ?? 'N/A'),
+          _buildStatusDivider(),
+          _buildStatusContainer('In Progress', currentOrder.dates['In Progress'] ?? 'N/A'),
+          _buildStatusDivider(),
+          _buildStatusContainer('Delivered', currentOrder.dates['Delivered'] ?? 'N/A'),
+          _buildStatusDivider(),
+          _buildStatusContainer('Completed', currentOrder.dates['Completed'] ?? 'N/A'),
+        ],
+      ),
+    ),
+  );
+
+    return ListView(
+      padding: const EdgeInsets.all(24),
+    children: [
+      if (isMobile)
+        Column(
+          children: [
+            detailsCard,
+            const SizedBox(height: 20),
+            timelineCard,
+          ],
+        )
+      else
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(flex: 3, child: detailsCard),
+            const SizedBox(width: 20),
+            Expanded(flex: 2, child: timelineCard),
+          ],
+        ),
+    ],
+    );
+  }
+
+  Widget _buildCommentsList(List<dynamic> comments) {
+    if (comments.isEmpty) return const Text("No comments available.");
+  
+    return SizedBox(
+      height: 200,
+      child: ListView.separated(
+        shrinkWrap: true,
+        itemCount: comments.length,
+        separatorBuilder: (context, index) => const Divider(),
+        itemBuilder: (context, index) {
+          final item = comments[index];
+          return ListTile(
+            title: Text("${item['name']} - ${item['date']}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            subtitle: Text("${item['text']}"),
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+Widget build(BuildContext context) {
+  List<NewOrder> completedOrders = orders.where((o) => o.status == 'Completed').toList();
+  List<NewOrder> archivedOrders = orders.where((o) => o.status == 'Archived').toList();
+
+  double screenWidth = MediaQuery.of(context).size.width;
+  bool isMobile = screenWidth < 800;
+
+  return DefaultTabController(
+    length: 2,
+    child: Scaffold(
       appBar: AppBar(
+        leading: (isMobile && selectedOrder != null)
+            ? IconButton(
+                icon: Icon(Icons.arrow_back, color: Theme.of(context).primaryColorDark),
+                onPressed: () => setState(() => selectedOrder = null),
+              )
+            : null,
         title: Text(
-          'Completed Orders',
+          'Order History', 
           style: TextStyle(
+            color: Theme.of(context).secondaryHeaderColor, 
             fontFamily: 'Klavika',
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).secondaryHeaderColor,
           ),
         ),
-        backgroundColor: Theme.of(context).cardColor,
+        bottom: (isMobile && selectedOrder != null)
+            ? null 
+            : TabBar(
+              labelColor: Theme.of(context).primaryColorDark,
+              labelStyle: TextStyle(fontFamily: 'Klavika'),          
+                tabs: [Tab(text: 'Completed',), Tab(text: 'Archived')],
+                indicatorColor: Theme.of(context).secondaryHeaderColor,
+              ),
+              
+          backgroundColor: Theme.of(context).cardColor,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10.0),
@@ -242,259 +434,49 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
           ),
         ],
       ),
-
       body: Row(
         children: [
-          Container(
-            width: 300,
-            padding: const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: Theme.of(context).canvasColor,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 10,
-                  offset: const Offset(0, 10),
-                ),
-              ]
+          if (!isMobile || (isMobile && selectedOrder == null))
+            Container(
+              width: isMobile ? screenWidth : 300,
+              decoration: BoxDecoration(
+                color: Theme.of(context).canvasColor,
+                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
+              ),
+              child: TabBarView(
+                children: [
+                  _buildOrderListView(completedOrders),
+                  _buildOrderListView(archivedOrders),
+                ],
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: filteredOrders.length,
-                    itemBuilder: (context, index) {
-                      NewOrder order = filteredOrders[index];
-
-                      return GestureDetector(
-                        onTap: () async {
-                          setState(() {
-                            selectedOrder = order; 
-                          });
-                        },
-                        child: Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Flexible(
-                                  child: SizedBox(
-                                    width: 40,
-                                    child: getProcessImage(order.process),
-                                  ),
-                                ),
-
-                                const SizedBox(width: 8.0),
-
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        order.name,
-                                        style: const TextStyle(
-                                          fontFamily: 'Klavika',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      Text(
-                                        order.dates['Completed'],
-                                        style: const TextStyle(
-                                          fontFamily: 'Klavika',
-                                          fontWeight: FontWeight.normal,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
 
           if (selectedOrder != null)
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(24), 
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center, 
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Order Details',
-                                style: TextStyle(
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Klavika',
-                                ),
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              ColoredBox(
-                                color: Theme.of(context).primaryColor,
-                                child: const SizedBox(height: 2, width: 200),
-                              ),
-
-                              const SizedBox(height: 24),
-                    
-                              _buildInfoRow('Order #:', selectedOrder!.orderNumber),
-                              _buildInfoRow('Name:', selectedOrder!.name),
-                              _buildInfoRow('Department:', selectedOrder!.department),
-                              _buildInfoRow('Process:', selectedOrder!.process),
-                              _buildInfoRow('Unit:', selectedOrder!.unit),
-                              _buildInfoRow('Type:', selectedOrder!.type),
-                              _buildInfoRow('Quantity:', selectedOrder!.quantity.toString()),
-                              _buildInfoRow('Price:', "\$${selectedOrder!.estimatedPrice.toStringAsFixed(2)}"),
-                    
-                              const SizedBox(height: 20), 
-
-                              Text(
-                                'Comments:',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold, 
-                                  fontSize: 16
-                                ),
-                              ),
-
-                              ColoredBox(
-                                color: Theme.of(context).secondaryHeaderColor,
-                                child: const SizedBox(height: 2, width: 200),
-                              ),
-
-                              SizedBox(height: 24),
-
-                              SizedBox(
-                                width: 600,
-                                height: 170,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Theme.of(context).primaryColorLight.withValues(alpha: 0.3)),
-                                    color: Theme.of(context).canvasColor,
-                                  ),
-                                  child:ListView.separated(
-                                    shrinkWrap: true, 
-                                    padding: const EdgeInsets.all(8.0),
-                                    physics: const AlwaysScrollableScrollPhysics(), 
-                                    itemCount: selectedOrder!.comment.length,
-
-  
-                                    separatorBuilder: (context, index) => Divider(
-                                      color: Theme.of(context).cardColor, 
-                                      thickness: 0.5,
-                                      height: 20, 
-                                    ),
-  
-  
-                                    itemBuilder: (context, index) {
-                                      final item = selectedOrder!.comment[index];
-    
-                                      return Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "${item['name']} - ${item['date']}",
-                                            style: const TextStyle(
-                                              fontFamily: 'Klavika', 
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-
-                                          const SizedBox(height: 4),
-
-                                          Text(
-                                            "${item['text']}",
-                                            style: const TextStyle(
-                                              fontFamily: 'Klavika',
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+              child: Stack(
+                children: [
+                  _buildOrderDetailView(selectedOrder!),
+                  
+                  if (isMobile)
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.white70,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: () => setState(() => selectedOrder = null),
                         ),
                       ),
                     ),
-
-                    const SizedBox(width: 20), 
-
-                    Expanded(
-                      flex: 2,
-                      child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Order Timeline',
-                                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'Klavika'),
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              ColoredBox(
-                                color: Theme.of(context).primaryColor,
-                                child: const SizedBox(height: 2, width: 200),
-                              ),
-
-                              const SizedBox(height: 20),
-                    
-                              _buildStatusContainer('Received', selectedOrder!.dates['Submitted']),
-                              _buildStatusDivider(),
-                              _buildStatusContainer('In Progress', selectedOrder!.dates['In Progress']),
-                              _buildStatusDivider(),
-                              _buildStatusContainer('Delivered', selectedOrder!.dates['Delivered']),
-                              _buildStatusDivider(),
-                              _buildStatusContainer('Completed', selectedOrder!.dates['Completed']),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                ],
               ),
             )
-          else
-            const Expanded(
-              child: Center(
-                child: Text("Select an order from the list to view details", 
-                style: TextStyle(color: Colors.grey)),
-              ),
-            ),
+          else if (!isMobile)
+            const Expanded(child: Center(child: Text("Select an order to view details"))),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

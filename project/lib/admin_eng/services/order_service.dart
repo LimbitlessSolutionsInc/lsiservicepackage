@@ -43,16 +43,16 @@ class OrderService with ChangeNotifier{
   }
 
   Future<void> requestCancellation(String orderNumber) async {
-    int index = _orders.indexWhere((o) => o.orderNumber == orderNumber);
-    
-    if (index != -1) {
-      _orders[index].status = "Cancellation Pending"; 
-      
-      await _saveToDisk();
+  int index = _orders.indexWhere((o) => o.orderNumber == orderNumber);
   
-      notifyListeners(); 
-    }
+  if (index != -1) {
+    _orders[index].cancelRequested = true; 
+    
+    await _saveToDisk();
+
+    notifyListeners(); 
   }
+}
 
   Future<void> addOrder(NewOrder newOrder) async {
     _orders.add(newOrder);

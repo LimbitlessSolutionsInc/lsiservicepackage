@@ -211,7 +211,7 @@ class AdminServicesState extends State<AdminServices> {
 
   void _applySortAndFilter() { // sorts list of current orders by the different 'sort by' criteria 
     setState(() {
-      filteredOrders = orders.where((order) => order.status != "Completed" && order.status != "Cancelled").toList();
+      filteredOrders = orders.where((order) => order.status != "Completed" && order.status != "Cancelled" && order.status != "Archived").toList();
 
       filteredOrders.sort((a, b) {
         switch (sortBy) {
@@ -278,7 +278,7 @@ class AdminServicesState extends State<AdminServices> {
                           suggestionsBuilder: (BuildContext context, SearchController controller) async {
                             final String keyword = controller.value.text.toLowerCase();
 
-                            filteredOrders = orders.where((order) => order.status != "Completed" && order.name.toLowerCase().contains(keyword)).toList();
+                            filteredOrders = orders.where((order) => order.status != "Completed" && order.status != "Cancelled" && order.status != "Archived" && order.name.toLowerCase().contains(keyword)).toList();
 
                             return filteredOrders.map((order) {
                               return ListTile(
@@ -396,7 +396,7 @@ class AdminServicesState extends State<AdminServices> {
                             });
 
                             filteredOrders = orders.where((order) {
-                              if (order.status == "Completed" && order.status == "Cancelled") {
+                              if (order.status == "Completed" && order.status == "Cancelled" && order.status == "Archived") {
                                 return false;
                               }
                               return true;
@@ -543,7 +543,12 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
             ),
             TextButton(
               onPressed: () async {
-                await OrderService().deleteOrder(widget.order.orderNumber); // deletes order from the JSON
+                setState(() {
+                  widget.order.status = 'Archived';
+                  widget.order.dates['Archived'] = DateTime.now().toString().split(' ')[0];
+                });
+
+                await OrderService().updateOrder(widget.order); // updates status and dates in the JSON
 
                 Navigator.pop(context);
                 Navigator.pop(context, 'delete'); 

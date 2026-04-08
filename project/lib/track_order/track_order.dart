@@ -535,11 +535,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
     if (order == null) return;
 
     final String orderNumber = order!.orderNumber;
-
-    setState(() {
-      order!.cancelRequested = true;
-    });
-
+    
     try {
     await OrderService().requestCancellation(orderNumber);
     await OrderService().updateOrder(order!); 
