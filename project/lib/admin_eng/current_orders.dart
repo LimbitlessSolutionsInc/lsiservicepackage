@@ -58,10 +58,11 @@ class AdminServicesState extends State<AdminServices> {
   @override
   void initState() {
     super.initState();
-    // We initialize the data, then process it
+
     _setupOrders();
   }
 
+  // initializes the orders and sets up the filtered list and graph start date based on the order data
   Future<void> _setupOrders() async {
     await OrderService().init(); 
   
@@ -87,13 +88,32 @@ class AdminServicesState extends State<AdminServices> {
         graphStartDate = DateTime.now();
       }
     });
+
+    // shows dialog if there are no current orders to display
+    if (filteredOrders.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("No Orders Found"),
+          content: Text("There are no current orders to display."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("OK"),
+            ),
+          ],
+        ),
+      );
+    }
   } 
 
+  // calculates the difference in months between two dates, used for the timeline graph to determine how many months to show based on the earliest order date and current date
   int calculateDiffinMonths(DateTime start, DateTime end) {
     int monDiff = ((end.year - start.year) * 12) + (end.month - start.month + 1);
     return monDiff;
   }
 
+  // subtracts a given number of months from a date, used to calculate the start date for the timeline graph based on the earliest order date and current date
   DateTime subtractDateByMon(DateTime date, int monthdiff) {
     int newYear = date.year;
     int newMonth = (date.month - monthdiff) + 1;
@@ -106,6 +126,7 @@ class AdminServicesState extends State<AdminServices> {
     return DateTime(newYear, newMonth, 1);
   }
 
+  // generates the header for the timeline graph, which includes the month and year for each week displayed in the graph. It calculates the total number of weeks to display based on the difference between the current date and the graph start date, and formats the header text accordingly.
   List<Widget> chartHeader(BuildContext context) {
     DateTime now = DateTime.now();
     int totalWeeks = (now.difference(graphStartDate).inDays / 7).ceil();
@@ -139,6 +160,7 @@ class AdminServicesState extends State<AdminServices> {
     return headerDates;
   }
 
+  // generates the timeline bars for the graph, which visually represent the duration of each order from its submission date to the current date. It calculates the width of each bar based on the number of weeks that have passed since the order was submitted, and positions the bars accordingly on the graph.
   List<Widget> timelineBars(BuildContext context) {
     DateTime now = DateTime.now();
     int totalWeeks = (now.difference(graphStartDate).inDays / 7).ceil();
@@ -182,10 +204,12 @@ class AdminServicesState extends State<AdminServices> {
     ];
   }
 
+  // calculates the difference in weeks between two dates, used to determine the width of the timeline bars based on how many weeks have passed since the order was submitted
   int calculateDiffinWeeks(DateTime startDate, DateTime endDate) {
     return endDate.difference(startDate).inDays ~/ 7 + 1;
   }
 
+  // calculates the width of the timeline bar for an order based on the number of weeks that have passed since the order was submitted. It uses the calculateDiffinWeeks function to determine the number of weeks and multiplies it by a predefined week width to get the final width of the bar.
   double calculateBarWidth(DateTime startDate, double weekWidth) {
     DateTime now = _startOfDay(DateTime.now()); // starts the day at midnight so new orders will show immediately
     DateTime start = _startOfDay(startDate);
@@ -195,6 +219,7 @@ class AdminServicesState extends State<AdminServices> {
     return ((daysDifference + 1) / 7) * weekWidth;
   }
 
+  // calculates the total width needed for the timeline graph based on the earliest order date and the current date. It determines the total number of weeks that need to be displayed on the graph and multiplies it by the predefined week width to get the total width required for the graph.
   double calculateTotalWidth(List<NewOrder> orders, double weekWidth) {
     if (orders.isEmpty) return weekWidth;
   
@@ -231,10 +256,8 @@ class AdminServicesState extends State<AdminServices> {
 
   @override
   Widget build(BuildContext context) {
-
-    if (orders.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    double screenWidth = MediaQuery.of(context).size.width;
+    bool isMobile = screenWidth < 800;
 
     return Scaffold(
       appBar: AppBar(
@@ -258,47 +281,56 @@ class AdminServicesState extends State<AdminServices> {
                   padding: const EdgeInsets.all(10),
                   child: Row(
                     children: [
-                      SizedBox(
-                        width: 250,
-                        child: SearchAnchor(
-                          builder: (BuildContext context, SearchController controller) {
-                            return SearchBar(
-                              controller: controller,
-                              padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 16)),
-                              onTap: () {
-                                controller.openView();
-                              },
-                              onChanged: (_) {
-                                controller.openView();
-                              },
-                              leading: const Icon(Icons.search),
+                      Padding(
+                        padding:EdgeInsetsGeometry.symmetric(horizontal: isMobile ? 8.0 : 16.0),
+                        child: SizedBox(
+                          width: isMobile ? 160 : 250, 
+                          height: 40,
 
-                            );
-                          },
-                          suggestionsBuilder: (BuildContext context, SearchController controller) async {
-                            final String keyword = controller.value.text.toLowerCase();
+                          // SearchAnchor provides the search functionality for the orders, allowing the user to search for specific orders by name. It uses a SearchBar for input and displays suggestions based on the search query. When a suggestion is tapped, it navigates to the OrderDetailsPage for that order.
+                          child: SearchAnchor(
+                            builder: (BuildContext context, SearchController controller) {
+                              return SearchBar(
+                                controller: controller,
+                                padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 16)),
 
-                            filteredOrders = orders.where((order) => order.status != "Completed" && order.status != "Cancelled" && order.status != "Archived" && order.name.toLowerCase().contains(keyword)).toList();
-
-                            return filteredOrders.map((order) {
-                              return ListTile(
-                                title: Text(order.name),
-                                subtitle: Text("Order #: ${order.orderNumber}"),
-                                onTap: () async {
-                                  controller.closeView(order.name);
-
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => OrderDetailsPage(order: order),
-                                    ),
-                                  );
-
-                                  _applySortAndFilter();
+                                onTap: () {
+                                  controller.openView();
                                 },
+
+                                onChanged: (_) {
+                                  controller.openView();
+                                },
+
+                                leading: const Icon(Icons.search),
                               );
-                            });
-                          },
+                            },
+
+                            suggestionsBuilder: (BuildContext context, SearchController controller) async {
+
+                              final String keyword = controller.value.text.toLowerCase();
+                              filteredOrders = orders.where((order) => order.cancelRequested == true && order.name.toLowerCase().contains(keyword)).toList();
+
+                              return filteredOrders.map((order) {
+                                return ListTile(
+                                  title: Text(order.name),
+                                  subtitle: Text("Order #: ${order.orderNumber}"),
+                                  onTap: () async {
+                                    controller.closeView(order.name);
+
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => OrderDetailsPage(order: order),
+                                      ),
+                                    );
+
+                                    _applySortAndFilter();
+                                  },
+                                );
+                              });
+                            },
+                          ),
                         ),
                       ),
                     ],
@@ -318,6 +350,7 @@ class AdminServicesState extends State<AdminServices> {
 
                 const SizedBox(width: 5.0),
 
+                // DropdownButton allows the user to select the criteria by which the orders are sorted. The options include sorting by date, status, process, or name. When a new sorting option is selected, it updates the sortBy variable and calls the _applySortAndFilter function to re-sort the list of orders based on the selected criteria.
                 DropdownButton<String>(
                   value: sortBy,
                   icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).secondaryHeaderColor),
@@ -328,16 +361,19 @@ class AdminServicesState extends State<AdminServices> {
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).secondaryHeaderColor,
                   ),
+
                   items: <String>['Date', 'Status', 'Process', 'Name'].map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
                     );
                   }).toList(),
+
                   onChanged: (String? newValue) {
                     setState(() {
                       sortBy = newValue!;
                     });
+
                     _applySortAndFilter(); // re-sorts the list
                   },
                 ),
@@ -346,6 +382,7 @@ class AdminServicesState extends State<AdminServices> {
           ),
         ],
       ),
+
       body: Row(
         children: [
           Container(
@@ -370,6 +407,7 @@ class AdminServicesState extends State<AdminServices> {
                     ),
                   ),
                 ),
+                
                 Expanded(
                   child: ListView.builder(
                     itemCount: filteredOrders.length,
@@ -407,6 +445,7 @@ class AdminServicesState extends State<AdminServices> {
                           _applySortAndFilter();
                         },
                         child: Card(
+                          color: Theme.of(context).cardColor,
                           child: Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(12.0),
@@ -443,6 +482,7 @@ class AdminServicesState extends State<AdminServices> {
                                   ),
                                 ),
 
+                                // shows warning icon next to orders that have a cancellation request, either pending or already requested by the user. This provides a visual indicator to the admin that there is a cancellation request associated with the order, allowing them to quickly identify and address these orders as needed.
                                 if (order.status == 'Cancellation Pending' || order.cancelRequested == true)
                                   const Padding(
                                     padding: EdgeInsets.only(left: 16.0), 
@@ -467,10 +507,13 @@ class AdminServicesState extends State<AdminServices> {
               ],
             ),
           ),
+
           Container(
             width: 2,
             color: Colors.black54,
           ),
+
+          // timeline graph section, which includes the header with the month and week labels and the bars representing the duration of each order. It uses a SingleChildScrollView to allow horizontal scrolling of the graph, and a Stack to overlay the timeline bars on top of the background grid lines.
           Expanded(
             child: SingleChildScrollView(
               controller: _scrollController, 
@@ -485,6 +528,7 @@ class AdminServicesState extends State<AdminServices> {
                       children: chartHeader(context), 
                     ),
                   ),
+
                   Expanded(
                     child: Container(
                       color: Theme.of(context).canvasColor, 
@@ -529,6 +573,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
     selectedStatus = widget.order.status; 
   }
 
+  // shows a confirmation dialog when the admin attempts to delete an order. If the admin confirms the deletion, it updates the order's status to 'Archived' and sets the archived date in the order's dates. It then calls the OrderService to update the order in the JSON data, and finally pops the current page and returns a 'delete' result to indicate that an order was deleted.
   void deleteOrder(BuildContext context) {
     showDialog(
       context: context,
@@ -561,6 +606,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
     );
   }
 
+  // updates the status of the order when the admin selects a new status from the dropdown. It sets the new status and updates the corresponding date in the order's dates. It then calls the OrderService to update the order in the JSON data, ensuring that the changes are saved and reflected in the order details.
   void updateStatus(String newStatus) async {
     setState(() {
       widget.order.status = newStatus;
@@ -580,6 +626,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
     super.dispose();
   }
 
+  // saves a new comment for the order when the admin submits a comment. It first checks if both the name and comment fields are filled out, and if not, it shows a snackbar message prompting the admin to enter both fields. If the fields are valid, it creates a new comment entry with the name, current date, and comment text, and adds it to the order's comments list. It then clears the input fields and calls the OrderService to update the order in the JSON data, ensuring that the new comment is saved and reflected in the order details.
   void saveComment(BuildContext context) async {
     // won't save if fields are empty
     if (_nameController.text.trim().isEmpty || _commentsController.text.trim().isEmpty) {
@@ -617,6 +664,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
     }
   }
 
+  // opens the file attached to the order when the admin clicks the "Open File for Printing" button. It uses the url_launcher package to attempt to open the file using the default application on the device. If the file cannot be opened (e.g., if the path is invalid), it shows a snackbar message indicating that the file could not be opened and prompts the admin to check the file path.
   Future<void> _openFile(String path) async {
     final Uri url = Uri.parse(path);
   
@@ -791,6 +839,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
 
                                 const SizedBox(height: 8.0),
 
+                                // shows the "Open File for Printing" button if there is a file path attached to the order. When clicked, it calls the _openFile function to attempt to open the file. If there is no file attached (i.e., the file path is empty), it displays a message indicating that no file is attached.
                                 if (widget.order.filePath.isNotEmpty)
                                   ElevatedButton.icon(
                                     onPressed: () => _openFile(widget.order.filePath),
@@ -845,11 +894,13 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                                     ),
                                   );
                                 }).toList(),
+
                                 onChanged: (value) {
                                   if (value != null) {
                                     updateStatus(value);
                                   }
                                 },
+
                                 dropdownColor: Theme.of(context).cardColor,
                                 style: const TextStyle(fontFamily: 'Klavika', fontWeight: FontWeight.normal),
                               ),
@@ -945,17 +996,12 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                           const SizedBox(height: 16.0),
 
         
-                          const Text("Add a Comment", style: TextStyle(fontFamily: 'Klavika', fontSize: 12, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
-        
-                          // name input
-                          TextField(
-                            controller: _nameController,
-                            decoration: InputDecoration(
-                              hintText: 'ex. John S',
-                              isDense: true,
-                              border: OutlineInputBorder(),
-                              hintStyle: TextStyle(fontFamily: 'Klavika'),
+                          const Text(
+                            "Add a Comment", 
+                            style: TextStyle( 
+                              fontFamily: 'Klavika', 
+                              fontSize: 12, 
+                              fontWeight: FontWeight.bold
                             ),
                           ),
                           

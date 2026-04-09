@@ -43,6 +43,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
     loadOrders();
   }
 
+  // loads the orders from the OrderService and initializes the completed and archived order lists as well as the expansion state list
   void loadOrders() {
     final List<NewOrder> loadedOrders = OrderService().orders;
     setState(() {
@@ -57,7 +58,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
 
   void _applySortAndFilter() { // sorts list of current orders by the different 'sort by' criteria 
     setState(() {
-      filteredOrders = orders.where((order) => order.status == "Completed").toList();
+      filteredOrders = orders.where((order) => order.status == "Completed" || order.status == "Cancelled" || order.status == "Archived").toList();
 
       filteredOrders.sort((a, b) {
         switch (sortBy) {
@@ -75,6 +76,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
     });
   }
 
+  // Helper method to build a row of order information with a label and value
   Widget _buildInfoRow(String label, String? value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -91,6 +93,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
     );
   }
 
+  // Helper method to build a container for each order status in the timeline with the status title and date
   Widget _buildStatusContainer(String title, String date) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
@@ -98,10 +101,12 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
         maxWidth: 270, 
         minHeight: 85, 
       ),
+
       decoration: BoxDecoration(
         color: Theme.of(context).secondaryHeaderColor,
         borderRadius: BorderRadius.circular(10),
       ),
+
       child: Center(
         child: Column(
           children: [
@@ -130,6 +135,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
     );
   }
 
+  // Helper method to build a vertical divider between status containers in the timeline
   Widget _buildStatusDivider() {
     return Container(
       height: 15,
@@ -138,6 +144,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
     );
   }
 
+  // Helper method to build the list view of orders for both the completed and archived tabs, showing the order name, process image, and completion date or status
   Widget _buildOrderListView(List<NewOrder> ordersToList) {
     if (ordersToList.isEmpty) {
       return const Center(child: Text("No orders found"));
@@ -151,6 +158,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
           onTap: () => setState(() => selectedOrder = order),
 
           child: Card(
+            color: Theme.of(context).cardColor,
             margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: Padding(
               padding: const EdgeInsets.all(10.0),
@@ -200,44 +208,60 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
     );
   }
 
+  // Helper method to build the detailed view of a selected order, showing all relevant information and comments in a card layout with a timeline of order status updates on the side (or below on mobile)
   Widget _buildOrderDetailView(NewOrder currentOrder) {
     bool isMobile = MediaQuery.of(context).size.width < 800;
 
     Widget detailsCard = Card(
-    elevation: 4,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Text(
-            'Order Details: ${currentOrder.name}',
-            style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'Klavika'),
-          ),
-          const SizedBox(height: 4),
-          ColoredBox(
-            color: Theme.of(context).primaryColor,
-            child: const SizedBox(height: 2, width: 300),
-          ),
-          const SizedBox(height: 24),
-          _buildInfoRow('Order #:', currentOrder.orderNumber),
-          _buildInfoRow('Journal Transfer:', currentOrder.journalTransferNumber),
-          _buildInfoRow('Department:', currentOrder.department),
-          _buildInfoRow('Process:', currentOrder.process),
-          _buildInfoRow('Unit:', currentOrder.unit),
-          _buildInfoRow('Type:', currentOrder.type),
-          _buildInfoRow('Quantity:', currentOrder.quantity.toString()),
-          _buildInfoRow('Price:', "\$${currentOrder.estimatedPrice.toStringAsFixed(2)}"),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Text(
+              'Order Details: ${currentOrder.name}',
+              style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'Klavika'),
+            ),
 
-          const SizedBox(height: 30),
-          const Text('Comments', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, fontFamily: 'Klavika')),
-          const Divider(),
-          _buildCommentsList(currentOrder.comment),
-        ],
+            const SizedBox(height: 4),
+
+            ColoredBox(
+              color: Theme.of(context).primaryColor,
+              child: const SizedBox(height: 2, width: 300),
+            ),
+
+            const SizedBox(height: 24),
+
+            _buildInfoRow('Order #:', currentOrder.orderNumber),
+            _buildInfoRow('Journal Transfer:', currentOrder.journalTransferNumber),
+            _buildInfoRow('Department:', currentOrder.department),
+            _buildInfoRow('Process:', currentOrder.process),
+            _buildInfoRow('Unit:', currentOrder.unit),
+            _buildInfoRow('Type:', currentOrder.type),
+            _buildInfoRow('Quantity:', currentOrder.quantity.toString()),
+            _buildInfoRow('Price:', "\$${currentOrder.estimatedPrice.toStringAsFixed(2)}"),
+
+            const SizedBox(height: 30),
+
+            const Text(
+              'Comments', 
+              style: TextStyle(
+                fontWeight: FontWeight.bold, 
+                fontSize: 18, 
+                fontFamily: 'Klavika'
+              ),
+            ),
+
+            const Divider(),
+
+            _buildCommentsList(currentOrder.comment),
+          ],
+        ),
       ),
-    ),
-  );
+    );
 
+  // Timeline card that shows the order status updates in a vertical layout with dividers between each status, and adapts to a horizontal layout on mobile screens
   Widget timelineCard = Card(
     elevation: 2,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -245,15 +269,30 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          const Text('Order Timeline', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'Klavika')),
+          const Text(
+            'Order Timeline', 
+            style: TextStyle(
+              fontSize: 22, 
+              fontWeight: FontWeight.bold, 
+              fontFamily: 'Klavika'
+            ),
+          ),
+
           const SizedBox(height: 10),
-          _buildStatusContainer('Received', currentOrder.dates['Submitted'] ?? 'N/A'),
-          _buildStatusDivider(),
-          _buildStatusContainer('In Progress', currentOrder.dates['In Progress'] ?? 'N/A'),
-          _buildStatusDivider(),
-          _buildStatusContainer('Delivered', currentOrder.dates['Delivered'] ?? 'N/A'),
-          _buildStatusDivider(),
-          _buildStatusContainer('Completed', currentOrder.dates['Completed'] ?? 'N/A'),
+
+          if(currentOrder.status == "Completed") ...[
+            _buildStatusContainer('Received', currentOrder.dates['Submitted'] ?? 'N/A'),
+            _buildStatusDivider(),
+            _buildStatusContainer('In Progress', currentOrder.dates['In Progress'] ?? 'N/A'),
+            _buildStatusDivider(),
+            _buildStatusContainer('Delivered', currentOrder.dates['Delivered'] ?? 'N/A'),
+            _buildStatusDivider(),
+            _buildStatusContainer('Completed', currentOrder.dates['Completed'] ?? 'N/A'),
+          ] else ...[
+            _buildStatusContainer('Received', currentOrder.dates['Submitted'] ?? 'N/A'),
+            _buildStatusDivider(),
+            _buildStatusContainer(currentOrder.status, currentOrder.dates[currentOrder.status] ?? 'N/A'),
+          ]
         ],
       ),
     ),
@@ -261,28 +300,29 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
 
     return ListView(
       padding: const EdgeInsets.all(24),
-    children: [
-      if (isMobile)
-        Column(
-          children: [
-            detailsCard,
-            const SizedBox(height: 20),
-            timelineCard,
-          ],
-        )
-      else
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(flex: 3, child: detailsCard),
-            const SizedBox(width: 20),
-            Expanded(flex: 2, child: timelineCard),
-          ],
-        ),
-    ],
+      children: [
+        if (isMobile)
+          Column(
+            children: [
+              detailsCard,
+              const SizedBox(height: 20),
+              timelineCard,
+            ],
+          )
+        else
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 3, child: detailsCard),
+              const SizedBox(width: 20),
+              Expanded(flex: 2, child: timelineCard),
+            ],
+          ),
+      ],
     );
   }
 
+  // Helper method to build the list of comments for the selected order, showing the commenter's name, date, and comment text in a scrollable list view
   Widget _buildCommentsList(List<dynamic> comments) {
     if (comments.isEmpty) return const Text("No comments available.");
   
@@ -304,179 +344,183 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
   }
 
   @override
-Widget build(BuildContext context) {
-  List<NewOrder> completedOrders = orders.where((o) => o.status == 'Completed').toList();
-  List<NewOrder> archivedOrders = orders.where((o) => o.status == 'Archived').toList();
+  Widget build(BuildContext context) {
+    // Filter the orders to get the completed and archived lists based on their status
+    List<NewOrder> completedOrders = orders.where((o) => o.status == 'Completed').toList();
+    List<NewOrder> archivedOrders = orders.where((o) => o.status == 'Archived' || o.status == 'Cancelled').toList();
 
-  double screenWidth = MediaQuery.of(context).size.width;
-  bool isMobile = screenWidth < 800;
+    double screenWidth = MediaQuery.of(context).size.width;
+    bool isMobile = screenWidth < 800;
 
-  return DefaultTabController(
-    length: 2,
-    child: Scaffold(
-      appBar: AppBar(
-        leading: (isMobile && selectedOrder != null)
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: (isMobile && selectedOrder != null)
             ? IconButton(
                 icon: Icon(Icons.arrow_back, color: Theme.of(context).primaryColorDark),
                 onPressed: () => setState(() => selectedOrder = null),
               )
             : null,
-        title: Text(
-          'Order History', 
-          style: TextStyle(
-            color: Theme.of(context).secondaryHeaderColor, 
-            fontFamily: 'Klavika',
-            fontWeight: FontWeight.bold,
+          title: Text(
+            'Order History', 
+            style: TextStyle(
+              color: Theme.of(context).secondaryHeaderColor, 
+              fontFamily: 'Klavika',
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        bottom: (isMobile && selectedOrder != null)
+          bottom: (isMobile && selectedOrder != null)
             ? null 
             : TabBar(
-              labelColor: Theme.of(context).primaryColorDark,
+              labelColor: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
               labelStyle: TextStyle(fontFamily: 'Klavika'),          
                 tabs: [Tab(text: 'Completed',), Tab(text: 'Archived')],
                 indicatorColor: Theme.of(context).secondaryHeaderColor,
               ),
               
           backgroundColor: Theme.of(context).cardColor,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10.0),
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 250,
-                        child: SearchAnchor(
-                          builder: (BuildContext context, SearchController controller) {
-                            return SearchBar(
-                              controller: controller,
-                              padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 16)),
-                              onTap: () {
-                                controller.openView();
-                              },
-                              onChanged: (_) {
-                                controller.openView();
-                              },
-                              leading: const Icon(Icons.search),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 10.0),
+              child: Row(
+                children: [
+                  Padding(
+                    padding:EdgeInsetsGeometry.symmetric(horizontal: isMobile ? 8.0 : 16.0),
+                    child: SizedBox(
+                      width: isMobile ? 160 : 250, 
+                      height: 40,
 
+                      // SearchAnchor provides the search functionality for filtering orders by name, and updates the filteredOrders list based on the search keyword entered by the user
+                      child: SearchAnchor(
+                        builder: (BuildContext context, SearchController controller) {
+                          return SearchBar(
+                            controller: controller,
+                            padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 16)),
+
+                            onTap: () {
+                              controller.openView();
+                            },
+
+                            onChanged: (_) {
+                              controller.openView();
+                            },
+
+                            leading: const Icon(Icons.search),
+                          );
+                        },
+
+                        // The suggestionsBuilder is called whenever the search view is opened or the search query changes, and it filters the orders based on the search keyword and returns a list of ListTile widgets for each matching order, which are displayed in the search suggestions dropdown
+                        suggestionsBuilder: (BuildContext context, SearchController controller) async {
+
+                          final String keyword = controller.value.text.toLowerCase();
+                          filteredOrders = orders.where((order) => order.cancelRequested == true && order.name.toLowerCase().contains(keyword)).toList();
+
+                          return filteredOrders.map((order) {
+                            return ListTile(
+                              title: Text(order.name),
+                              subtitle: Text("Order #: ${order.orderNumber}"),
+                              onTap: () async {
+                                controller.closeView(order.name);
+                                setState(() {
+                                  selectedOrder = order;
+                                });              
+                              },
                             );
-                          },
-
-                          suggestionsBuilder: (BuildContext context, SearchController controller) async {
-                            final String keyword = controller.value.text.toLowerCase();
-
-                            filteredOrders = orders.where((order) => order.status == "Completed" && order.name.toLowerCase().contains(keyword)).toList();
-
-                            return filteredOrders.map((order) {
-                              return ListTile(
-                                title: Text(order.name),
-                                subtitle: Text("Order #: ${order.orderNumber}"),
-                                onTap: () async {
-                                  controller.closeView(order.name);
-
-                                  setState(() {
-                                    selectedOrder = order;
-                                  });
-
-                                  _applySortAndFilter();
-                                },
-                              );
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                SizedBox(width: 5),
-
-                Text(
-                  'Sort By:',
-                  style: TextStyle(
-                    fontFamily: 'Klavika',
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).secondaryHeaderColor,
-                  ),
-                ),
-
-                const SizedBox(width: 5.0),
-
-                DropdownButton<String>(
-                  value: sortBy,
-                  icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).secondaryHeaderColor),
-                  dropdownColor: Theme.of(context).cardColor,
-                  underline: Container(),
-                  style: TextStyle(
-                    fontFamily: 'Klavika',
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).secondaryHeaderColor,
-                  ),
-                  items: <String>['Date', 'Status', 'Process', 'Name'].map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      sortBy = newValue!;
-                    });
-                    _applySortAndFilter(); // re-sorts the list
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      body: Row(
-        children: [
-          if (!isMobile || (isMobile && selectedOrder == null))
-            Container(
-              width: isMobile ? screenWidth : 300,
-              decoration: BoxDecoration(
-                color: Theme.of(context).canvasColor,
-                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
-              ),
-              child: TabBarView(
-                children: [
-                  _buildOrderListView(completedOrders),
-                  _buildOrderListView(archivedOrders),
-                ],
-              ),
-            ),
-
-          if (selectedOrder != null)
-            Expanded(
-              child: Stack(
-                children: [
-                  _buildOrderDetailView(selectedOrder!),
-                  
-                  if (isMobile)
-                    Positioned(
-                      top: 10,
-                      left: 10,
-                      child: CircleAvatar(
-                        backgroundColor: Colors.white70,
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back),
-                          onPressed: () => setState(() => selectedOrder = null),
-                        ),
+                          });
+                        },
                       ),
                     ),
+                  ),
+
+                  SizedBox(width: 5),
+
+                  Text(
+                    'Sort By:',
+                    style: TextStyle(
+                      fontFamily: 'Klavika',
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).secondaryHeaderColor,
+                    ),
+                  ),
+
+                  const SizedBox(width: 5.0),
+                  
+                  // DropdownButton for selecting the sorting criteria for the orders, which updates the sortBy variable and calls the _applySortAndFilter method to re-sort the list of orders based on the selected criteria
+                  DropdownButton<String>(
+                    value: sortBy,
+                    icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).secondaryHeaderColor),
+                    dropdownColor: Theme.of(context).cardColor,
+                    underline: Container(),
+                    style: TextStyle(
+                      fontFamily: 'Klavika',
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).secondaryHeaderColor,
+                    ),
+
+                    items: <String>['Date', 'Status', 'Process', 'Name'].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        sortBy = newValue!;
+                      });
+
+                      _applySortAndFilter(); // re-sorts the list
+                    },
+                  ),
                 ],
               ),
-            )
-          else if (!isMobile)
-            const Expanded(child: Center(child: Text("Select an order to view details"))),
-        ],
+            ),
+          ],
+        ),
+        body: Row(
+          children: [
+            if (!isMobile || (isMobile && selectedOrder == null))
+              Container(
+                width: isMobile ? screenWidth : 300,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).canvasColor,
+                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
+                ),
+                child: TabBarView(
+                  children: [
+                    _buildOrderListView(completedOrders),
+                    _buildOrderListView(archivedOrders),
+                  ],
+                ),
+              ),
+
+            if (selectedOrder != null)
+              Expanded(
+                child: Stack(
+                  children: [
+                    _buildOrderDetailView(selectedOrder!),
+                  
+                    if (isMobile)
+                      Positioned(
+                        top: 10,
+                        left: 10,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.white70,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back),
+                            onPressed: () => setState(() => selectedOrder = null),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              )
+            else if (!isMobile)
+              const Expanded(child: Center(child: Text("Select an order to view details"))),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

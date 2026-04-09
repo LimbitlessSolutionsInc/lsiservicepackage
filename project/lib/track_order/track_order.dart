@@ -27,7 +27,6 @@ class TrackOrderPageState extends State<TrackOrderPage> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,141 +53,142 @@ class TrackOrderPageState extends State<TrackOrderPage> {
               minHeight: MediaQuery.of(context).size.height,
             ),
             child: 
-            SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const SizedBox(height: 16.0),
-                  if (!_isTracking) ...[
-                    TextField(
-                      controller: _orderIdController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Order ID',
-                        border: const OutlineInputBorder(),
-                        labelStyle: TextStyle(
-                          color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).shadowColor,
-                          fontFamily: 'Klavika',
-                          fontWeight: FontWeight.normal,
-                        ),
-                        errorText: _validate ? 'Order ID not found' : null,
-                      ),
-                      style: TextStyle(color: Theme.of(context).unselectedWidgetColor),
-                    ),
-
+              SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
                     const SizedBox(height: 16.0),
+                    if (!_isTracking) ...[
+                      TextField(
+                        controller: _orderIdController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Order ID',
+                          border: const OutlineInputBorder(),
+                          labelStyle: TextStyle(
+                            color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).shadowColor,
+                            fontFamily: 'Klavika',
+                            fontWeight: FontWeight.normal,
+                          ),
+                          errorText: _validate ? 'Order ID not found' : null,
+                        ),
+                        style: TextStyle(color: Theme.of(context).unselectedWidgetColor),
+                      ),
+
+                      const SizedBox(height: 16.0),
                     
-                    ElevatedButton(
-                      onPressed:() {
-                        final inputId = _orderIdController.text;
+                      ElevatedButton(
+                        onPressed:() {
+                          final inputId = _orderIdController.text;
 
-                        if(inputId.isEmpty) {
-                          setState(() {
-                            _validate = inputId.isEmpty;
-                          });
-                        } else {
-                          final foundOrder = OrderService().orders.cast<NewOrder?>().firstWhere((o) => o?.orderNumber.trim() == inputId.trim(), orElse: () => null,);
-
-                          if(foundOrder != null) {
-                            // if order exists
+                          if(inputId.isEmpty) {
                             setState(() {
-                              _validate = false;
-                              _isTracking = true;
-                              order = foundOrder;
+                              _validate = inputId.isEmpty;
                             });
                           } else {
-                            // if order does not exist
-                            setState(() {
-                              _validate = true;
-                              _isTracking = false;
-                            });
+                            final foundOrder = OrderService().orders.cast<NewOrder?>().firstWhere((o) => o?.orderNumber.trim() == inputId.trim(), orElse: () => null,);
+
+                            if(foundOrder != null) {
+                              // if order exists
+                              setState(() {
+                                _validate = false;
+                                _isTracking = true;
+                                order = foundOrder;
+                              });
+                            } else {
+                              // if order does not exist
+                              setState(() {
+                                _validate = true;
+                                _isTracking = false;
+                              });
+                            }
                           }
-                        }
-                      },
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
-                        side: WidgetStateProperty.all(
-                          BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor),
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                          side: WidgetStateProperty.all(
+                            BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor),
+                          ),
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
                         ),
-                        shape: WidgetStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
+                        child: Text(
+                          'TRACK',
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColorLight,
+                            fontFamily: 'Klavika',
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      child: Text(
-                        'TRACK',
+                    ] else ...[
+                      Text(
+                        'Hi, ${order?.name}',
                         style: TextStyle(
-                          color: Theme.of(context).primaryColorLight,
-                          fontFamily: 'Klavika',
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ] else ...[
-                    Text(
-                      'Hi, ${order?.name}',
-                      style: TextStyle(
-                        color:
+                          color:
                             currentTheme == 
                             CSS.lsiTheme
                             ? Theme.of(context).cardColor
                             : Theme.of(context).secondaryHeaderColor,
-                        fontFamily: 'Klavika',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24.0,
+                          fontFamily: 'Klavika',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24.0,
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 16.0),
+                      const SizedBox(height: 16.0),
 
-                    if (isMobile)
-                      Column(
-                        children: [
-                          _buildOrderDetails(),
-                          const SizedBox(height: 16.0),
-                          Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColorLight,
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            child: _buildOrderStatus(),
-                          ),
-                        ],
-                      )
-                    else
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _buildOrderDetails(),
-                          ),
-
-                          const SizedBox(width: 16.0),
-            
-                          Expanded(
-                            child: Container(
-                              height: 400,
+                      if (isMobile)
+                        Column(
+                          children: [
+                            _buildOrderDetails(),
+                            const SizedBox(height: 16.0),
+                            Container(
+                              width: double.infinity,
                               decoration: BoxDecoration(
                                 color: Theme.of(context).primaryColorLight,
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               child: _buildOrderStatus(),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        )
+                      else
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _buildOrderDetails(),
+                            ),
+
+                            const SizedBox(width: 16.0),
+            
+                            Expanded(
+                              child: Container(
+                                height: 400,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).primaryColorLight,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: _buildOrderStatus(),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
           );
         },
-      )
+      ),
     );
   }
 
+  // Builds the order details section with a responsive layout
   Widget _buildOrderDetails() {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -244,7 +244,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Order Number:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -265,6 +265,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                         ],
                       ),
                     ),
+
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
@@ -273,12 +274,13 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Name:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
                             ),
                           ),
+
                           Expanded(
                             child: Text(
                               '${order?.name}',
@@ -294,6 +296,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                         ],
                       ),
                     ),
+
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
@@ -302,12 +305,13 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Process:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
                             ),
                           ),
+
                           Expanded(
                             child: Text(
                               '${order?.process}',
@@ -323,6 +327,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                         ],
                       ),
                     ),
+
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
@@ -331,12 +336,13 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Unit:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
                             ),
                           ),
+
                           Expanded(
                             child: Text(
                               order!.unit,
@@ -352,6 +358,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                         ],
                       ),
                     ),
+
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
@@ -360,12 +367,13 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Type:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
                             ),
                           ),
+
                           Expanded(
                             child: Text(
                               '${order?.type}',
@@ -381,6 +389,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                         ],
                       ),
                     ),
+
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
@@ -389,12 +398,13 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Quantity:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
                             ),
                           ),
+
                           Expanded(
                             child: Text(
                               order!.quantity.toString(),
@@ -410,6 +420,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                         ],
                       ),
                     ),
+
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
@@ -418,12 +429,13 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Rate:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
                             ),
                           ),
+
                           Expanded(
                             child: Text(
                               '${order?.rate} per cubic unit',
@@ -439,6 +451,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                         ],
                       ),
                     ),
+
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
@@ -447,12 +460,13 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Estimated Price:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark,
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
                             ),
                           ),
+
                           Expanded(
                             child: Text(
                               '\$${order?.estimatedPrice.toStringAsFixed(2)}',
@@ -474,56 +488,55 @@ class TrackOrderPageState extends State<TrackOrderPage> {
 
               const SizedBox( height: 18.0),
               Align(
-              alignment: Alignment.bottomLeft,
-              child: ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text("Order Cancellation Request"),
-                        content: const Text("Are you sure you want to cancel your order?"),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(); 
-                            },
-                            child: const Text("No"),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(); 
-                              _cancelOrder(context); 
-                            },
-                            child: const Text("Yes"),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
-                  side: WidgetStateProperty.all(
-                    BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor),
+                alignment: Alignment.bottomLeft,
+                child: ElevatedButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text("Order Cancellation Request"),
+                          content: const Text("Are you sure you want to cancel your order?"),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(); 
+                              },
+                              child: const Text("No"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(); 
+                                _cancelOrder(context); 
+                              },
+                              child: const Text("Yes"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                    side: WidgetStateProperty.all(
+                      BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor),
+                    ),
+                    shape: WidgetStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
                   ),
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+                  child: Text(
+                    'REQUEST CANCELLATION',
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColorLight,
+                      fontFamily: 'Klavika',
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                child: Text(
-                  'REQUEST CANCELLATION',
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColorLight,
-                    fontFamily: 'Klavika',
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
               ),
-            ),
-
             ],
           ),
         );
@@ -531,6 +544,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
     );
   }
 
+  // Handles the order cancellation process, including updating the order status and providing user feedback
   void _cancelOrder(BuildContext context) async {
     if (order == null) return;
 
@@ -566,7 +580,8 @@ class TrackOrderPageState extends State<TrackOrderPage> {
       }
     }
   }
-
+  
+  // Builds the order status section with a visual representation of the order's progress through different stages
   Widget _buildOrderStatus() {
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -665,7 +680,8 @@ class TrackOrderPageState extends State<TrackOrderPage> {
     );
   }
 
-    Widget _buildStatusContainer(String title, bool isCompleted, {bool isLarge = false}) {
+  // Builds a status container with dynamic styling based on completion status and size preference
+  Widget _buildStatusContainer(String title, bool isCompleted, {bool isLarge = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
       constraints: const BoxConstraints(
@@ -690,6 +706,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
     );
   }
 
+  // Builds a divider widget that visually connects status containers, with dynamic styling based on completion status
   Widget _buildStatusDivider(bool isCompleted) {
     return Container(
       height: 10,

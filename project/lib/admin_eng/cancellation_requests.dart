@@ -50,6 +50,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
     super.dispose();
   }
 
+  // Load orders from the service and initialize the expanded state list
   void loadOrders() {
     final List<NewOrder> loadedOrders = OrderService().orders;
 
@@ -60,12 +61,12 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
     });
   }
 
+  // Helper method to build a consistent info row for order details
   Widget _buildInfoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         children: [
-
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(right: 12.0), 
@@ -92,7 +93,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                   fontWeight: FontWeight.normal, 
                   fontSize: 16,
                   fontFamily: 'Klavika',
-                  color: Theme.of(context).primaryColorDark,
+                  color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
                 ),
               ),
             ),
@@ -102,6 +103,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
     );
   }
 
+  // Handle submission of the cancellation response
   void _submitResponse(BuildContext context, NewOrder currentOrder) async {
     if (_commentsController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -110,6 +112,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
       return;
     }
 
+    // Ensure that either "Reject" or "Accept" is selected before submitting
     if (_isSelected[0] || _isSelected[1]) {
       final Map<String, dynamic> newEntry = {
         'name': 'Cancellation Response',
@@ -149,6 +152,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
     }
   }
 
+  // Show a dialog if there are no cancellation requests to process
   void _showNoOrdersDialog() {
     if (_dialogShown) return;
     _dialogShown = true;
@@ -167,6 +171,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
     ).then((_) => _dialogShown = false);
   }
 
+  // Build the list view of cancellation requests
   Widget _buildOrderListView(List<NewOrder> filteredOrders) {
     return ListView.builder(
       itemCount: filteredOrders.length,
@@ -175,14 +180,25 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
         return GestureDetector(
           onTap: () => setState(() => selectedOrder = order),
           child: Card(
+            color: Theme.of(context).cardColor,
             margin: const EdgeInsets.symmetric(vertical: 4.0),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
-                   Flexible(child: SizedBox(width: 40, child: getProcessImage(order.process))),
-                   const SizedBox(width: 8.0),
-                   Expanded(child: Text(order.name, style: const TextStyle(fontFamily: 'Klavika', fontSize: 16, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+                  Flexible(child: SizedBox(width: 40, child: getProcessImage(order.process))),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: Text(
+                      order.name, 
+                      style: const TextStyle(
+                        fontFamily: 'Klavika', 
+                        fontSize: 16, 
+                        fontWeight: FontWeight.bold
+                      ), 
+                      overflow: TextOverflow.ellipsis
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -192,6 +208,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
     );
   }
 
+  // Build the detailed view for a selected order, including the response form
   Widget _buildOrderDetailView(NewOrder currentOrder) {
     return ListView(
       children: [
@@ -204,10 +221,22 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Text('Cancellation Requested: ${currentOrder.name}', 
-                    style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'Klavika')),
+                  Text(
+                    'Cancellation Requested: ${currentOrder.name}', 
+                    style: const TextStyle(
+                      fontSize: 25, 
+                      fontWeight: FontWeight.bold, 
+                      fontFamily: 'Klavika'
+                    ),
+                  ),
+
                   const SizedBox(height: 4),
-                  ColoredBox(color: Theme.of(context).primaryColor, child: const SizedBox(height: 2, width: 400)),
+
+                  ColoredBox(
+                    color: Theme.of(context).primaryColor, 
+                    child: const SizedBox(height: 2, width: 400)
+                  ),
+
                   const SizedBox(height: 10),
                   
                   _buildInfoRow('Order #:', currentOrder.orderNumber),
@@ -234,6 +263,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                       children: [
                         const Text('Accept Cancellation Request?', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Klavika')),
                         
+                        // Custom styled ToggleButtons for Reject and Accept options
                         ToggleButtons(
                           renderBorder: false,
                           fillColor: Colors.transparent,
@@ -257,7 +287,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                           decoration: InputDecoration(
                             hintText: 'Type your comment here...',
                             filled: true,
-                            fillColor: Theme.of(context).primaryColorLight,
+                            fillColor: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
                             border: const OutlineInputBorder(),
                           ),
                         ),
@@ -267,7 +297,14 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).splashColor),
                           onPressed: () => _submitResponse(context, currentOrder),
-                          child: Text('SUBMIT', style: TextStyle(color: Theme.of(context).primaryColorDark, fontWeight: FontWeight.bold, fontFamily: 'Klavika')),
+                          child: Text(
+                            'SUBMIT', 
+                            style: TextStyle(
+                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark, 
+                              fontWeight: FontWeight.bold, 
+                              fontFamily: 'Klavika'
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -281,18 +318,28 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
     );
   }
 
+  // Helper method to build custom toggle tabs for Reject and Accept options
   Widget _buildToggleTab(String label, int index) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: _isSelected[index] 
             ? (index == 0 ? Colors.redAccent : Colors.greenAccent) 
             : Theme.of(context).splashColor,
         borderRadius: BorderRadius.circular(8),
       ),
+
       child: Padding(
         padding: const EdgeInsets.all(10),
-        child: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Klavika', color: Colors.black)),
+        child: Text(
+          label, 
+          style:  TextStyle(
+            fontSize: 12, 
+            fontWeight: FontWeight.bold, 
+            fontFamily: 'Klavika', 
+            color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+          ),
+        ),
       ),
     );
   }
@@ -301,6 +348,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
   Widget build(BuildContext context) { 
     List<NewOrder> filteredOrders = orders.where((order) => order.cancelRequested == true).toList(); 
 
+    // Show a dialog if there are no cancellation requests to process
     if (filteredOrders.isEmpty) {
       Future.microtask(() => _showNoOrdersDialog());
     }
@@ -320,49 +368,53 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
         ),
         backgroundColor: Theme.of(context).cardColor,
         actions: [
-          SizedBox(
-            width: isMobile ? 160 : 250, 
-            height: 40,
-            child: SearchAnchor(
-              builder: (BuildContext context, SearchController controller) {
-                return SearchBar(
-                  controller: controller,
-                  padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 16)),
+          Padding(
+            padding:EdgeInsetsGeometry.symmetric(horizontal: isMobile ? 8.0 : 16.0),
+            child: SizedBox(
+              width: isMobile ? 160 : 250, 
+              height: 40,
+              child: SearchAnchor(
+                builder: (BuildContext context, SearchController controller) {
+                  return SearchBar(
+                    controller: controller,
+                    padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 16)),
 
-                  onTap: () {
-                    controller.openView();
-                  },
-
-                  onChanged: (_) {
-                    controller.openView();
-                  },
-
-                  leading: const Icon(Icons.search),
-                );
-              },
-
-              suggestionsBuilder: (BuildContext context, SearchController controller) async {
-
-                final String keyword = controller.value.text.toLowerCase();
-                filteredOrders = orders.where((order) => order.cancelRequested == true && order.name.toLowerCase().contains(keyword)).toList();
-
-                return filteredOrders.map((order) {
-                  return ListTile(
-                    title: Text(order.name),
-                    subtitle: Text("Order #: ${order.orderNumber}"),
-                    onTap: () async {
-                      controller.closeView(order.name);
-                      setState(() {
-                        selectedOrder = order;
-                      });              
+                    onTap: () {
+                      controller.openView();
                     },
+
+                    onChanged: (_) {
+                      controller.openView();
+                    },
+
+                    leading: const Icon(Icons.search),
                   );
-                });
-               },
+                },
+
+                suggestionsBuilder: (BuildContext context, SearchController controller) async {
+
+                  final String keyword = controller.value.text.toLowerCase();
+                  filteredOrders = orders.where((order) => order.cancelRequested == true && order.name.toLowerCase().contains(keyword)).toList();
+
+                  return filteredOrders.map((order) {
+                    return ListTile(
+                      title: Text(order.name),
+                      subtitle: Text("Order #: ${order.orderNumber}"),
+                      onTap: () async {
+                        controller.closeView(order.name);
+                        setState(() {
+                          selectedOrder = order;
+                        });              
+                      },
+                    );
+                  });
+                },
+              ),
             ),
           ), 
         ],
       ),
+      
       body: Row(
         children: [
           if (!isMobile || (isMobile && selectedOrder == null))
