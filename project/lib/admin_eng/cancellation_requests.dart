@@ -22,6 +22,8 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
   final List<bool> _isSelected = [false, false];
   final TextEditingController _commentsController = TextEditingController();
   bool _dialogShown = false;
+  late bool isHalloween;
+  late ThemeData theme;
 
   Widget getProcessImage(String process) {
     switch (process) {
@@ -93,7 +95,11 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                   fontWeight: FontWeight.normal, 
                   fontSize: 16,
                   fontFamily: 'Klavika',
-                  color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+                  color: isHalloween 
+                              ? theme.hoverColor 
+                              : (theme.brightness == Brightness.dark 
+                                ? theme.primaryColorLight 
+                                : theme.primaryColorDark),
                 ),
               ),
             ),
@@ -115,7 +121,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
     // Ensure that either "Reject" or "Accept" is selected before submitting
     if (_isSelected[0] || _isSelected[1]) {
       final Map<String, dynamic> newEntry = {
-        'name': 'Cancellation Response',
+        'name': 'Cancellation Response', // currentUser.uid,
         'date': DateTime.now().toString().split(' ')[0],
         'text': _commentsController.text.trim(),
       };
@@ -215,6 +221,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
         Padding(
           padding: const EdgeInsets.all(24),
           child: Card(
+            color: Theme.of(context).cardColor,
             elevation: 4,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
@@ -255,13 +262,21 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                       horizontal: MediaQuery.of(context).size.width > 1200 ? 250 : 10, 
                       vertical: 25
                     ),
+
                     decoration: BoxDecoration(
                       color: Theme.of(context).secondaryHeaderColor,
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Column(
                       children: [
-                        const Text('Accept Cancellation Request?', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Klavika')),
+                        const Text(
+                          'Accept Cancellation Request?', 
+                          style: TextStyle(
+                            fontSize: 20, 
+                            fontWeight: FontWeight.bold, 
+                            fontFamily: 'Klavika'
+                          ),
+                          ),
                         
                         // Custom styled ToggleButtons for Reject and Accept options
                         ToggleButtons(
@@ -287,7 +302,8 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                           decoration: InputDecoration(
                             hintText: 'Type your comment here...',
                             filled: true,
-                            fillColor: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+                            fillColor: Theme.of(context).primaryColorLight,
+                            hoverColor: Theme.of(context).hoverColor,
                             border: const OutlineInputBorder(),
                           ),
                         ),
@@ -300,7 +316,11 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
                           child: Text(
                             'SUBMIT', 
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark, 
+                              color: isHalloween 
+                              ? theme.hoverColor 
+                              : (theme.brightness == Brightness.dark 
+                                ? theme.primaryColorLight 
+                                : theme.primaryColorDark), 
                               fontWeight: FontWeight.bold, 
                               fontFamily: 'Klavika'
                             ),
@@ -337,7 +357,11 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
             fontSize: 12, 
             fontWeight: FontWeight.bold, 
             fontFamily: 'Klavika', 
-            color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+            color: isHalloween 
+              ? theme.hoverColor 
+              : (theme.brightness == Brightness.dark 
+                ? theme.primaryColorLight 
+                : theme.primaryColorDark),
           ),
         ),
       ),
@@ -347,6 +371,9 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
   @override
   Widget build(BuildContext context) { 
     List<NewOrder> filteredOrders = orders.where((order) => order.cancelRequested == true).toList(); 
+
+    theme = Theme.of(context);
+    isHalloween = theme.brightness == Brightness.dark && theme.secondaryHeaderColor == CSS.hallowTheme.secondaryHeaderColor;
 
     // Show a dialog if there are no cancellation requests to process
     if (filteredOrders.isEmpty) {
@@ -415,7 +442,9 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
         ],
       ),
       
-      body: Row(
+      body: Container(
+        color: Theme.of(context).splashColor,
+      child: Row(
         children: [
           if (!isMobile || (isMobile && selectedOrder == null))
             Container(
@@ -456,6 +485,7 @@ class CancellationRequestsPageState extends State<CancellationRequestsPage> {
               ),
             ),
         ],
+      ),
       ),
     );
   }

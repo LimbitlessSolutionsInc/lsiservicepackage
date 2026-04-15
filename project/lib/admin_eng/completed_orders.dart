@@ -213,6 +213,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
     bool isMobile = MediaQuery.of(context).size.width < 800;
 
     Widget detailsCard = Card(
+      color: Theme.of(context).cardColor,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
@@ -221,7 +222,11 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
           children: [
             Text(
               'Order Details: ${currentOrder.name}',
-              style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'Klavika'),
+              style: TextStyle(
+                fontSize: 25, 
+                fontWeight: FontWeight.bold, 
+                fontFamily: 'Klavika'
+              ),
             ),
 
             const SizedBox(height: 4),
@@ -263,6 +268,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
 
   // Timeline card that shows the order status updates in a vertical layout with dividers between each status, and adapts to a horizontal layout on mobile screens
   Widget timelineCard = Card(
+    color: Theme.of(context).cardColor,
     elevation: 2,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     child: Padding(
@@ -276,6 +282,13 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
               fontWeight: FontWeight.bold, 
               fontFamily: 'Klavika'
             ),
+          ),
+
+          const SizedBox(height: 4),
+
+          ColoredBox(
+            color: Theme.of(context).primaryColor,
+            child: const SizedBox(height: 2, width: 175),
           ),
 
           const SizedBox(height: 10),
@@ -349,6 +362,9 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
     List<NewOrder> completedOrders = orders.where((o) => o.status == 'Completed').toList();
     List<NewOrder> archivedOrders = orders.where((o) => o.status == 'Archived' || o.status == 'Cancelled').toList();
 
+    final theme = Theme.of(context);
+    bool isHalloween = theme.brightness == Brightness.dark && theme.secondaryHeaderColor == CSS.hallowTheme.secondaryHeaderColor;
+
     double screenWidth = MediaQuery.of(context).size.width;
     bool isMobile = screenWidth < 800;
 
@@ -373,7 +389,11 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
           bottom: (isMobile && selectedOrder != null)
             ? null 
             : TabBar(
-              labelColor: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+              labelColor: isHalloween 
+                ? theme.hoverColor 
+                : (theme.brightness == Brightness.dark 
+                  ? theme.primaryColorLight 
+                  : theme.primaryColorDark),
               labelStyle: TextStyle(fontFamily: 'Klavika'),          
                 tabs: [Tab(text: 'Completed',), Tab(text: 'Archived')],
                 indicatorColor: Theme.of(context).secondaryHeaderColor,
@@ -478,7 +498,9 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
             ),
           ],
         ),
-        body: Row(
+        body: Container(
+          color: Theme.of(context).splashColor,
+        child: Row(
           children: [
             if (!isMobile || (isMobile && selectedOrder == null))
               Container(
@@ -520,6 +542,7 @@ class CompleteOrdersPageState extends State<CompleteOrdersPage> {
               const Expanded(child: Center(child: Text("Select an order to view details"))),
           ],
         ),
+      ),
       ),
     );
   }

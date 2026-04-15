@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../css/css.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'dart:html' as html; 
+import 'dart:convert';
 
 import 'models/data.dart';
 import 'package:service_package/admin_eng/services/order_service.dart';
@@ -287,7 +288,6 @@ class AdminServicesState extends State<AdminServices> {
                           width: isMobile ? 160 : 250, 
                           height: 40,
 
-                          // SearchAnchor provides the search functionality for the orders, allowing the user to search for specific orders by name. It uses a SearchBar for input and displays suggestions based on the search query. When a suggestion is tapped, it navigates to the OrderDetailsPage for that order.
                           child: SearchAnchor(
                             builder: (BuildContext context, SearchController controller) {
                               return SearchBar(
@@ -350,7 +350,6 @@ class AdminServicesState extends State<AdminServices> {
 
                 const SizedBox(width: 5.0),
 
-                // DropdownButton allows the user to select the criteria by which the orders are sorted. The options include sorting by date, status, process, or name. When a new sorting option is selected, it updates the sortBy variable and calls the _applySortAndFilter function to re-sort the list of orders based on the selected criteria.
                 DropdownButton<String>(
                   value: sortBy,
                   icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).secondaryHeaderColor),
@@ -564,7 +563,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
   final TextEditingController _commentsController = TextEditingController() ;
   final TextEditingController _nameController = TextEditingController();
   List<String> savedComments = []; 
-  final List<String> statuses = ['Received', 'In Progress', 'Delivered', 'Completed', 'Cancellation Pending']; 
+  final List<String> statuses = ['Received', 'In Progress', 'Delivered', 'Completed']; 
 
   @override
   void initState() {
@@ -629,20 +628,19 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
   // saves a new comment for the order when the admin submits a comment. It first checks if both the name and comment fields are filled out, and if not, it shows a snackbar message prompting the admin to enter both fields. If the fields are valid, it creates a new comment entry with the name, current date, and comment text, and adds it to the order's comments list. It then clears the input fields and calls the OrderService to update the order in the JSON data, ensuring that the new comment is saved and reflected in the order details.
   void saveComment(BuildContext context) async {
     // won't save if fields are empty
-    if (_nameController.text.trim().isEmpty || _commentsController.text.trim().isEmpty) {
+    if (_commentsController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter both a name and a comment.')),
+        const SnackBar(content: Text('Please enter a comment.')),
       );
       return; 
     }
 
     final Map<String, dynamic> newEntry = {
-      'name': _nameController.text.trim(),
+      'name': 'Test Admin User', // currentUser.uid,
       'date': DateTime.now().toString().split(' ')[0], 
       'text': _commentsController.text.trim(),
     };
 
-    // updates the UI and data
     setState(() {
       widget.order.comment.add(newEntry);
     
@@ -650,7 +648,6 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
       _commentsController.clear();
     });
 
-    // updates the JSON and then shows comfirmation message
     try {
       await OrderService().updateOrder(widget.order);
     
@@ -664,28 +661,46 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
     }
   }
 
-  // opens the file attached to the order when the admin clicks the "Open File for Printing" button. It uses the url_launcher package to attempt to open the file using the default application on the device. If the file cannot be opened (e.g., if the path is invalid), it shows a snackbar message indicating that the file could not be opened and prompts the admin to check the file path.
-  Future<void> _openFile(String path) async {
-    final Uri url = Uri.parse(path);
-  
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open the file. Check the path.')),
-        );
-      }
+  // handles the download of the attached file for the order. It retrieves the file data and name from the order, checks if the data is valid, and then creates a Blob from the decoded base64 data. It generates a URL for the Blob and creates an anchor element to trigger the download of the file when clicked. If there is an error during this process, it catches the exception and shows a snackbar message indicating that there was an error downloading the file.
+  void _downloadAttachedFile() {
+    final data = widget.order.fileData;
+    final name = widget.order.filePath; 
+
+    if (data == null || data.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No file data found for this order.')),
+      );
+      return;
+    }
+
+    try {
+      final bytes = base64Decode(data);
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+    
+      html.AnchorElement(href: url)
+        ..setAttribute("download", name.isNotEmpty ? name : "download.stl")
+        ..click();
+
+      html.Url.revokeObjectUrl(url);
+    } catch (e) {
+      debugPrint("Download error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error downloading file.')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool isMobile = MediaQuery.of(context).size.width < 800;
+
     return Scaffold(
+      backgroundColor: Theme.of(context).canvasColor,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.close), 
-          onPressed: () => Navigator.pop(context), 
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.pop(context),
         ),
         backgroundColor: Theme.of(context).cardColor,
       ),
@@ -694,361 +709,357 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
         child: Container(
           color: Theme.of(context).canvasColor,
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center, 
-                crossAxisAlignment: CrossAxisAlignment.start, 
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Theme.of(context).primaryColorLight),
-                        color: Theme.of(context).cardColor,
-                      ),
-                      constraints: const BoxConstraints(
-                        maxHeight: 400,
-                      ),
 
-                      padding: const EdgeInsets.all(12.0),
+          child: SingleChildScrollView(
 
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Order Details',
-                            style: TextStyle(
-                              fontFamily: 'Klavika',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24.0,
-                            ),
-                          ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
 
-                          ColoredBox(
-                            color: Theme.of(context).secondaryHeaderColor,
-                            child: SizedBox(width: 145, height: 2),
-                          ),
+              children: [
+                SizedBox(
+                  height: isMobile ? null : 450,
 
-                          const SizedBox(height: 8.0),
+                  child: Flex(
+                    direction: isMobile ? Axis.vertical : Axis.horizontal,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (isMobile)
+                        _buildOrderDetailsBox(context)
+                      else
+                        Expanded(flex: 1, child: _buildOrderDetailsBox(context)),
 
-                          Expanded(
-                            child: ListView(
-                              padding: EdgeInsets.zero,
-                              children: [
-                                Text(
-                                  'Name: ${widget.order.name}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 17.0
-                                  ),
-                                ),
+                    
+                      isMobile ? const SizedBox(height: 16.0) : const SizedBox(width: 16.0),
 
-                                Text(
-                                  'Process: ${widget.order.process}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 17.0
-                                  ),
-                                ),
+                      if (isMobile)
+                        _buildCommentsBox(context)
+                      else
+                        Expanded(flex: 1, child: _buildCommentsBox(context)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ); 
+  }
 
-                                Text(
-                                  'Order Number: ${widget.order.orderNumber}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 17.0                                        
-                                  ),
-                                ),
+  // builds the order details box, which displays all the relevant information about the order, including the name, process, order number, unit, type, quantity, rate, submission date, department, status, and any attached file. It also includes a dropdown for updating the order status and a button for deleting the order. The box is styled with a border and background color that matches the current theme.
+  Widget _buildOrderDetailsBox(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Theme.of(context).primaryColorLight),
+        color: Theme.of(context).cardColor,
+      ),
+      constraints: const BoxConstraints(maxHeight: 400),
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Order Details',
+            style: TextStyle(fontFamily: 'Klavika', fontWeight: FontWeight.bold, fontSize: 24.0),
+          ),
+          ColoredBox(
+            color: Theme.of(context).secondaryHeaderColor,
+            child: const SizedBox(width: 145, height: 2),
+          ),
+          const SizedBox(height: 8.0),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                Text(
+                  'Name: ${widget.order.name}', 
+                  style: const TextStyle(
+                    fontFamily: 'Klavika', 
+                    fontSize: 17.0
+                  )
+                ),
 
-                                Text(
-                                  'Unit: ${widget.order.unit}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 17.0
-                                  ),
-                                ),
+                Text(
+                  'Process: ${widget.order.process}', 
+                  style: const TextStyle(
+                    fontFamily: 'Klavika', 
+                    fontSize: 17.0
+                  )
+                ),
 
-                                Text(
-                                  'Type: ${widget.order.type}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 17.0
-                                  ),
-                                ),
+                Text(
+                  'Order Number: ${widget.order.orderNumber}', 
+                  style: const TextStyle(
+                    fontFamily: 'Klavika', 
+                    fontSize: 17.0
+                  )
+                ),
 
-                                Text(
-                                  'Quantity: ${widget.order.quantity}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 17.0
-                                  ),
-                                ),
+                Text(
+                  'Order Number: ${widget.order.orderNumber}', 
+                  style: const TextStyle(
+                    fontFamily: 'Klavika', 
+                    fontSize: 17.0
+                  )
+                ),
 
-                                Text(
-                                  'Rate: \$${widget.order.rate.toStringAsFixed(2)}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 17.0
-                                  ),
-                                ),
+                Text(
+                  'Unit: ${widget.order.unit}', 
+                  style: const TextStyle(
+                    fontFamily: 'Klavika', 
+                    fontSize: 17.0
+                  )
+                ),
 
-                                Text(
-                                  'Date Submitted: ${widget.order.dates['Submitted']}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 17.0
-                                  ),
-                                ),
+                Text(
+                  'Type: ${widget.order.type}', 
+                  style: const TextStyle(
+                    fontFamily: 'Klavika', 
+                    fontSize: 17.0
+                  )
+                ),
 
-                                Text(
-                                  'Department: ${widget.order.department}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 17.0
-                                  ),
-                                ),
+                Text(
+                  'Quantity: ${widget.order.quantity}', 
+                  style: const TextStyle(
+                    fontFamily: 'Klavika', 
+                    fontSize: 17.0
+                  )
+                ),
 
-                                Text(
-                                  'Status: ${widget.order.status}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 17.0
-                                  ),
-                                ),
+                Text(
+                  'Rate: \$${widget.order.rate.toStringAsFixed(2)}', 
+                  style: const TextStyle(
+                    fontFamily: 'Klavika', 
+                    fontSize: 17.0
+                  )
+                ),
 
-                                const SizedBox(height: 16.0),
-                                const Text(
-                                  'File Attachment:',
-                                  style: TextStyle(
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16.0,
-                                  ),
-                                ),
+                Text(
+                  'Date Submitted: ${widget.order.dates['Submitted']}', 
+                  style: const TextStyle(
+                    fontFamily: 'Klavika', 
+                    fontSize: 17.0
+                  )
+                ),
 
-                                const SizedBox(height: 8.0),
+                Text(
+                  'Department: ${widget.order.department}', 
+                  style: const TextStyle(
+                    fontFamily: 'Klavika', 
+                    fontSize: 17.0
+                  )
+                ),
 
-                                // shows the "Open File for Printing" button if there is a file path attached to the order. When clicked, it calls the _openFile function to attempt to open the file. If there is no file attached (i.e., the file path is empty), it displays a message indicating that no file is attached.
-                                if (widget.order.filePath.isNotEmpty)
-                                  ElevatedButton.icon(
-                                    onPressed: () => _openFile(widget.order.filePath),
-                                    icon: const Icon(Icons.file_present, color: Colors.white),
-                                    label: Text(
-                                      'OPEN FILE FOR PRINTING',
-                                      style: TextStyle(color: Colors.white, fontFamily: 'Klavika'),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blueGrey,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    ),
-                                  )
-                                else
-                                  const Text(
-                                    'No file attached',
-                                    style: TextStyle(fontFamily: 'Klavika', color: Colors.grey, fontStyle: FontStyle.italic),
-                                  ),
+                Text(
+                  'Status: ${widget.order.status}', 
+                  style: const TextStyle(
+                    fontFamily: 'Klavika', 
+                    fontSize: 17.0
+                  )
+                ),
 
-                                if (updatedStatusMessage != null) ...[
-                                  const SizedBox(height: 8.0),
-                                  Text(
-                                    updatedStatusMessage!,
-                                    style: const TextStyle(
-                                      color: Colors.green,
-                                      fontFamily: 'Klavika',
-                                      fontSize: 17.0
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
+                const SizedBox(height: 16.0),
 
-                          const SizedBox(height: 16.0),
+                const Text(
+                  'File Attachment:', 
+                  style: TextStyle(
+                    fontFamily: 'Klavika', 
+                    fontWeight: FontWeight.bold, 
+                    fontSize: 16.0
+                  )
+                ),
 
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              DropdownButton<String>(
-                                value: selectedStatus,
-                                items: statuses.map((status) {
-                                  final isDisabled = statuses.indexOf(status) <= statuses.indexOf(selectedStatus);
-                                  return DropdownMenuItem<String>(
-                                    value: status,
-                                    enabled: !isDisabled,
-                                    child: Text(
-                                      status,
-                                      style: TextStyle(
-                                        color: isDisabled ? Colors.grey : Colors.black,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
+                const SizedBox(height: 8.0),
 
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    updateStatus(value);
-                                  }
-                                },
-
-                                dropdownColor: Theme.of(context).cardColor,
-                                style: const TextStyle(fontFamily: 'Klavika', fontWeight: FontWeight.normal),
-                              ),
-
-                              const SizedBox(width: 20.0),
-
-                              ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                              ),
-                                onPressed: () => deleteOrder(context),
-                                child: const Text(
-                                  'DELETE ORDER',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontFamily: 'Klavika',
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                if (widget.order.filePath.isNotEmpty)
+                  ElevatedButton.icon(
+                    onPressed: () =>  _downloadAttachedFile(),
+                    icon: const Icon(Icons.file_present, color: Colors.white),
+                    label: const Text(
+                      'OPEN FILE FOR PRINTING', 
+                      style: TextStyle(
+                        color: Colors.white, 
+                        fontFamily: 'Klavika'
+                      )
                     ),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
+                  )
+
+                else
+
+                  const Text(
+                    'No file attached', 
+                    style: TextStyle(
+                      fontFamily: 'Klavika', 
+                      color: Colors.grey, 
+                      fontStyle: FontStyle.italic
+                    )
                   ),
 
-                  const SizedBox(width: 16.0),
-                
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Theme.of(context).primaryColorLight),
-                        color: Theme.of(context).cardColor,
-                      ),
-                      constraints: const BoxConstraints(maxHeight: 400),
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Comments',
-                            style: TextStyle(
-                              fontFamily: 'Klavika',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24.0,
-                            ),
-                          ),
+                if (updatedStatusMessage != null) ...[
 
-                          ColoredBox(
-                            color: Theme.of(context).secondaryHeaderColor,
-                            child: SizedBox(width: 120, height: 2),
-                          ),
+                  const SizedBox(height: 8.0),
 
-                          const SizedBox(height: 8.0),
-
-                          // list of existing comments
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Theme.of(context).primaryColorLight.withValues(alpha: 0.3)),
-                                color: Theme.of(context).canvasColor,
-                              ),
-                              child: ListView.separated(
-                                padding: const EdgeInsets.all(8.0),
-                                itemCount: widget.order.comment.length,
-                                separatorBuilder: (context, index) => const Divider(),
-                                itemBuilder: (context, index) {
-                                  final item = widget.order.comment[index];
-                                  return Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${item['name']} - ${item['date']}",
-                                        style: const TextStyle(fontFamily: 'Klavika', fontWeight: FontWeight.bold, fontSize: 12),
-                                      ),
-                                      Text(
-                                        "${item['text']}",
-                                        style: const TextStyle(fontFamily: 'Klavika', fontSize: 14),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 16.0),
-
-        
-                          const Text(
-                            "Add a Comment", 
-                            style: TextStyle( 
-                              fontFamily: 'Klavika', 
-                              fontSize: 12, 
-                              fontWeight: FontWeight.bold
-                            ),
-                          ),
-                          
-                          const SizedBox(height: 8),
-
-                          // comment Input
-                          TextField(
-                            controller: _commentsController,
-                            maxLines: 2,
-                            decoration: InputDecoration(
-                              hintText: 'Type your comment here...',
-                              isDense: true,
-                              border: OutlineInputBorder(),
-                              hintStyle: TextStyle(fontFamily: 'Klavika'),
-                            ),
-                          ),
-
-                          const SizedBox(height: 8.0),
-
-                          Align(
-                            alignment: Alignment.bottomRight,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).secondaryHeaderColor,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                              ),
-                              onPressed: () => saveComment(context),
-                              child: Text(
-                                'SAVE',
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColorLight,
-                                  fontFamily: 'Klavika',
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
+                  Text(
+                    updatedStatusMessage!, 
+                    style: const TextStyle(
+                      color: Colors.green, 
+                      fontFamily: 'Klavika', 
+                      fontSize: 17.0
+                    )
+                  ),
                 ],
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16.0),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              DropdownButton<String>(
+                value: selectedStatus,
+                items: statuses.map((status) {
+                  final isDisabled = statuses.indexOf(status) <= statuses.indexOf(selectedStatus);
+                  return DropdownMenuItem<String>(
+                    value: status,
+                    enabled: !isDisabled,
+                    child: Text(status, style: TextStyle(color: isDisabled ? Colors.grey : Colors.black)),
+                  );
+                }).toList(),
+                onChanged: (value) => value != null ? updateStatus(value) : null,
+                dropdownColor: Theme.of(context).cardColor,
+              ),
+
+              const SizedBox(width: 20.0),
+
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: () => deleteOrder(context),
+                child: const Text(
+                  'DELETE ORDER', 
+                  style: TextStyle(
+                    color: Colors.white, 
+                    fontFamily: 'Klavika', 
+                    fontWeight: FontWeight.bold
+                  )
+                ),
               ),
             ],
           ),
-        ),
-      )
+        ],
+      ),
+    );
+  }
+
+  // builds the comments section of the order details page, which displays existing comments for the order and provides a text field for the admin to add new comments. It shows a list of comments with the commenter's name, date, and comment text, and includes a "Save" button that allows the admin to save a new comment. When the "Save" button is pressed, it calls the saveComment function to validate and save the new comment to the order's comments list and update the JSON data.
+  Widget _buildCommentsBox(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Theme.of(context).primaryColorLight),
+        color: Theme.of(context).cardColor,
+      ),
+      constraints: const BoxConstraints(maxHeight: 400),
+      padding: const EdgeInsets.all(12.0),
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Comments', 
+            style: TextStyle(
+              fontFamily: 'Klavika', 
+              fontWeight: FontWeight.bold, 
+              fontSize: 24.0
+            )
+          ),
+
+          ColoredBox(
+            color: Theme.of(context).secondaryHeaderColor, 
+            child: const SizedBox(width: 120, height: 2)
+          ),
+
+          const SizedBox(height: 8.0),
+
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Theme.of(context).primaryColorLight.withValues(alpha: 0.3)),
+                color: Theme.of(context).canvasColor,
+              ),
+              child: ListView.separated(
+                padding: const EdgeInsets.all(8.0),
+                itemCount: widget.order.comment.length,
+                separatorBuilder: (context, index) => const Divider(),
+                itemBuilder: (context, index) {
+                  final item = widget.order.comment[index];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${item['name']} - ${item['date']}", 
+                        style: const TextStyle(
+                          fontFamily: 'Klavika', 
+                          fontWeight: FontWeight.bold, 
+                          fontSize: 12
+                        )
+                      ),
+
+                      Text(
+                        "${item['text']}", 
+                        style: const TextStyle(
+                          fontFamily: 'Klavika', 
+                          fontSize: 14
+                        )
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16.0),
+
+          const Text(
+            "Add a Comment", 
+            style: TextStyle(
+              fontFamily: 'Klavika', 
+              fontSize: 12, 
+              fontWeight: FontWeight.bold
+            )
+          ),
+
+          const SizedBox(height: 8),
+
+          TextField(
+            controller: _commentsController,
+            maxLines: 2,
+            decoration: const InputDecoration(hintText: 'Type your comment here...', isDense: true, border: OutlineInputBorder()),
+          ),
+
+          const SizedBox(height: 8.0),
+
+          Align(
+            alignment: Alignment.bottomRight,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).secondaryHeaderColor),
+              onPressed: () => saveComment(context),
+              child: Text(
+                'SAVE', 
+                style: TextStyle(
+                  color: Theme.of(context).primaryColorLight, 
+                  fontFamily: 'Klavika', 
+                  fontWeight: FontWeight.bold
+                )
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

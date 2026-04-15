@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:service_package/admin_eng/cancellation_requests.dart';
 import '../css/css.dart';
 
-import 'completed_orders.dart';
 import 'current_orders.dart';
+import 'completed_orders.dart';
 import 'package:service_package/admin_eng/services/order_service.dart';
 
 ThemeData currentTheme = CSS.lightTheme;
@@ -16,6 +16,7 @@ class AdminPage extends StatefulWidget {
 }
 
 class AdminPageState extends State<AdminPage> {
+  // This getter calculates the number of cancellation requests by filtering the orders from the OrderService.
   int get cancellationCount {
     return OrderService().orders.where((o) => o.cancelRequested == true).length;
   }
@@ -53,8 +54,9 @@ class AdminPageState extends State<AdminPage> {
                         Container(
                           height: screenHeight - kToolbarHeight,
                           decoration: BoxDecoration(
+                            color: Theme.of(context).secondaryHeaderColor,
                             image: const DecorationImage(
-                              image: AssetImage('assets/images/armwbluebackground.png'),
+                              image: AssetImage('assets/images/armwnobg.png'),
                               fit: BoxFit.cover,
                             ),
                             boxShadow: [
@@ -158,13 +160,14 @@ class AdminPageState extends State<AdminPage> {
                               backgroundColor: Theme.of(context).secondaryHeaderColor,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
                             ),
+
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text(
+                                Text(
                                   'CANCELLATION REQUESTS',
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: Theme.of(context).primaryColorLight,
                                     fontFamily: 'Klavika',
                                     fontWeight: FontWeight.bold,
                                   ),

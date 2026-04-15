@@ -23,6 +23,7 @@ class NewOrder {
   final double rate;
   final double estimatedPrice;
   String filePath;
+  String? fileData;
   final Map<String, dynamic> dates;
   final String journalTransferNumber;
   final String department;
@@ -42,6 +43,7 @@ class NewOrder {
     required this.rate,
     required this.estimatedPrice,
     required this.filePath,
+    this.fileData,
     required this.dates,
     required this.journalTransferNumber,
     required this.department,

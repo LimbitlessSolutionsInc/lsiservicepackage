@@ -29,6 +29,9 @@ class TrackOrderPageState extends State<TrackOrderPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    bool isHalloween = theme.brightness == Brightness.dark && theme.secondaryHeaderColor == CSS.hallowTheme.secondaryHeaderColor;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -52,6 +55,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
             constraints: BoxConstraints(
               minHeight: MediaQuery.of(context).size.height,
             ),
+            
             child: 
               SingleChildScrollView(
                 child: Column(
@@ -59,6 +63,8 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     const SizedBox(height: 16.0),
+
+                    // If not tracking, show the input field and track button; otherwise, show order details and status
                     if (!_isTracking) ...[
                       TextField(
                         controller: _orderIdController,
@@ -66,7 +72,11 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           labelText: 'Enter Order ID',
                           border: const OutlineInputBorder(),
                           labelStyle: TextStyle(
-                            color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).shadowColor,
+                            color: isHalloween 
+                              ? theme.primaryColorDark 
+                              : (theme.brightness == Brightness.dark 
+                                ? theme.primaryColorLight 
+                                : theme.primaryColorDark),
                             fontFamily: 'Klavika',
                             fontWeight: FontWeight.normal,
                           ),
@@ -104,17 +114,20 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                             }
                           }
                         },
+
                         style: ButtonStyle(
                           backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
                           side: WidgetStateProperty.all(
                             BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor),
                           ),
+
                           shape: WidgetStateProperty.all(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                           ),
                         ),
+
                         child: Text(
                           'TRACK',
                           style: TextStyle(
@@ -193,6 +206,8 @@ class TrackOrderPageState extends State<TrackOrderPage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         bool isMobile = constraints.maxWidth < 600.0;
+        final theme = Theme.of(context);
+        bool isHalloween = theme.brightness == Brightness.dark && theme.secondaryHeaderColor == CSS.hallowTheme.secondaryHeaderColor;
         return Container(
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
@@ -228,11 +243,11 @@ class TrackOrderPageState extends State<TrackOrderPage> {
 
               Container(
                 padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration
-                (
+                decoration: BoxDecoration(
                   color: Theme.of(context).cardColor, 
                   borderRadius: BorderRadius.circular(8.0),
                 ),
+
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -244,12 +259,17 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Order Number:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+                              color: isHalloween 
+                              ? theme.hoverColor 
+                              : (theme.brightness == Brightness.dark 
+                                ? theme.primaryColorLight 
+                                : theme.primaryColorDark),
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
                             ),
                           ),
+
                           Expanded(
                             child: Text(
                               order!.orderNumber,
@@ -274,7 +294,11 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Name:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+                              color: isHalloween 
+                              ? theme.hoverColor 
+                              : (theme.brightness == Brightness.dark 
+                                ? theme.primaryColorLight 
+                                : theme.primaryColorDark),
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -305,7 +329,11 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Process:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+                              color: isHalloween 
+                                ? theme.hoverColor 
+                                : (theme.brightness == Brightness.dark 
+                                  ? theme.primaryColorLight 
+                                  : theme.primaryColorDark),
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -336,7 +364,11 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Unit:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+                              color: isHalloween 
+                                ? theme.hoverColor 
+                                : (theme.brightness == Brightness.dark 
+                                  ? theme.primaryColorLight 
+                                  : theme.primaryColorDark),
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -367,7 +399,11 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Type:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+                              color: isHalloween 
+                                ? theme.hoverColor 
+                                : (theme.brightness == Brightness.dark 
+                                  ? theme.primaryColorLight 
+                                  : theme.primaryColorDark),
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -398,7 +434,11 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Quantity:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+                              color: isHalloween 
+                                ? theme.hoverColor 
+                                : (theme.brightness == Brightness.dark 
+                                  ? theme.primaryColorLight 
+                                  : theme.primaryColorDark) ,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -429,7 +469,11 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Rate:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+                              color: isHalloween 
+                                ? theme.hoverColor 
+                                : (theme.brightness == Brightness.dark 
+                                  ? theme.primaryColorLight 
+                                  : theme.primaryColorDark),
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -460,7 +504,11 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                           Text(
                             'Estimated Price:',
                             style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+                              color: isHalloween 
+                                ? theme.hoverColor 
+                                : (theme.brightness == Brightness.dark 
+                                  ? theme.primaryColorLight 
+                                  : theme.primaryColorDark) ,
                               fontFamily: 'Klavika',
                               fontWeight: FontWeight.normal,
                               fontSize: 16.0,
@@ -504,6 +552,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
                               },
                               child: const Text("No"),
                             ),
+
                             TextButton(
                               onPressed: () {
                                 Navigator.of(context).pop(); 
@@ -597,6 +646,7 @@ class TrackOrderPageState extends State<TrackOrderPage> {
           ),
         ],
       ),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -688,10 +738,12 @@ class TrackOrderPageState extends State<TrackOrderPage> {
         maxWidth: 220, 
         minHeight: 50.0, 
       ),
+
       decoration: BoxDecoration(
         color: isCompleted ? Theme.of(context).secondaryHeaderColor: Theme.of(context).hoverColor,
         borderRadius: BorderRadius.circular(10),
       ),
+      
       child: Center(
         child: Text(
           title,

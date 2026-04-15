@@ -8,7 +8,6 @@ import 'create_order/create_order.dart';
 import 'css/css.dart';
 
 ThemeData currentTheme = CSS.lightTheme;
-
 int orderLength = 0;
 
 void main() async {
@@ -141,7 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           const SizedBox(height: 15),
                           Center(
-                            child: _buildInfoCard('assets/images/emb_mill_lg.png', 'Milling'),
+                            child: _buildInfoCard('assets/images/emb_mill_lg.png', 'The Tormach 770 CNC mill is used to physically make the molds by running aluminum blanks through a specialized toolkit of flat and ball-nose end mills to capture the details that we need to make a multitude of different sized parts. The CNC mill is used by the Manufactoring team to design the molds.' ),
                           ),
                           const SizedBox(height: 15),
                           Center(
@@ -162,28 +161,30 @@ class _MyHomePageState extends State<MyHomePage> {
                           width: 145,
 
                           child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const CreateOrderPage()),
-                            );
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
-                            side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
-                            shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            )),
-                          ),
-                          child: Text(
-                            'CREATE ORDER',
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColorLight,
-                              fontFamily: 'Klavika',
-                              fontWeight: FontWeight.bold
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const CreateOrderPage()),
+                              );
+                            },
+
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                              side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
+                              shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              )),
+                            ),
+
+                            child: Text(
+                              'CREATE ORDER',
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColorLight,
+                                fontFamily: 'Klavika',
+                                fontWeight: FontWeight.bold
+                              ),
                             ),
                           ),
-                        ),
                         ),
 
                         const SizedBox(height: 16.0), 
@@ -193,28 +194,30 @@ class _MyHomePageState extends State<MyHomePage> {
                           width: 140,
 
                           child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const TrackOrderPage()),
-                            );
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
-                            side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
-                            shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            )),
-                          ),
-                          child: Text(
-                            'TRACK ORDER',
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColorLight,
-                              fontFamily: 'Klavika',
-                              fontWeight: FontWeight.bold,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const TrackOrderPage()),
+                              );
+                            },
+
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                              side: WidgetStateProperty.all( BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
+                              shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              )),
+                            ),
+
+                            child: Text(
+                              'TRACK ORDER',
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColorLight,
+                                fontFamily: 'Klavika',
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
                         ),
 
                         const SizedBox(height: 16.0),
@@ -224,28 +227,42 @@ class _MyHomePageState extends State<MyHomePage> {
                           width: 140,
 
                           child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const AdminPage()), // Navigate to AdminPage
-                            );
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
-                            side: WidgetStateProperty.all(BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
-                            shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            )),
-                          ),
-                          child: Text(
-                            'ADMIN PAGE', // Button text
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColorLight,
-                              fontFamily: 'Klavika',
-                              fontWeight: FontWeight.bold,
+                            onPressed: () {
+                              /*
+                              if(currentUser.status == 'admin') {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const AdminPage()),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Access Denied: Admins Only')),
+                                );
+                              } 
+                              */
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const AdminPage()), // Navigate to AdminPage
+                              );
+                            },
+
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(Theme.of(context).secondaryHeaderColor),
+                              side: WidgetStateProperty.all(BorderSide(width: 2.0, color: Theme.of(context).secondaryHeaderColor)),
+                              shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              )),
+                            ),
+
+                            child: Text(
+                              'ADMIN PAGE', // Button text
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColorLight,
+                                fontFamily: 'Klavika',
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
                         ),
                       ],
                     ),
@@ -254,6 +271,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
+
           if (isSettingsOpen)
             AppSettingsDrawer(
               onThemeChanged: widget.onThemeChanged,
@@ -265,7 +283,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class AppSettingsDrawer extends StatelessWidget{
+class AppSettingsDrawer extends StatelessWidget {
   final Function(LsiThemes) onThemeChanged;
   final VoidCallback onClose;
 
@@ -273,14 +291,17 @@ class AppSettingsDrawer extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double widthFactor = screenWidth < 600 ? 0.7 : 0.3;
+
     return Align(
       alignment: Alignment.centerRight,
       child: FractionallySizedBox(
-        widthFactor: 0.3,
+        widthFactor: widthFactor,
         heightFactor: 1.0,
         child: Material(
           elevation: 16,
-          color:Theme.of(context).canvasColor,
+          color: Theme.of(context).canvasColor,
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
@@ -296,24 +317,38 @@ class AppSettingsDrawer extends StatelessWidget{
                   ),
                 ),
               ),
-              ListTile(
-                title: const Text('Theme'),
-                trailing: DropdownButton<LsiThemes>(
-                  value: LsiThemes.light,  
-                  items: LsiThemes.values.map((LsiThemes theme) {
-                    return DropdownMenuItem<LsiThemes>(
-                      value: theme,
-                      child: Text(theme.name),
-                    );
-                  }).toList(),
-                  onChanged: (LsiThemes? newTheme) {
-                    if (newTheme != null) {
-                      onThemeChanged(newTheme);  
-                    }
-                  },                
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Theme',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 8), 
+                    DropdownButton<LsiThemes>(
+                      isExpanded: true, 
+                      value: LsiThemes.light,
+                      items: LsiThemes.values.map((LsiThemes theme) {
+                        return DropdownMenuItem<LsiThemes>(
+                          value: theme,
+                          child: Text(theme.name),
+                        );
+                      }).toList(),
+                      onChanged: (LsiThemes? newTheme) {
+                        if (newTheme != null) {
+                          onThemeChanged(newTheme);
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
+
               const Divider(),
+
               ListTile(
                 leading: const Icon(Icons.close),
                 title: const Text('Close Settings'),
@@ -342,13 +377,16 @@ class _HoverImageTileState extends State<HoverImageTile> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final theme = Theme.of(context);
+    bool isHalloween = theme.brightness == Brightness.dark && theme.secondaryHeaderColor == CSS.hallowTheme.secondaryHeaderColor;
 
+    return GestureDetector(
       onTap: () {
         setState(() {
           _showText = !_showText;
         });
       },
+
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
@@ -361,9 +399,11 @@ class _HoverImageTileState extends State<HoverImageTile> {
             ),
           ],
         ),
+
         width: 300,
         padding: const EdgeInsets.all(20),
         margin: const EdgeInsets.all(10),
+
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -385,9 +425,11 @@ class _HoverImageTileState extends State<HoverImageTile> {
                           widget.desc,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Theme.of(context).brightness == Brightness.dark
-                                ? Theme.of(context).primaryColorLight
-                                : Theme.of(context).primaryColorDark,
+                            color: isHalloween 
+                              ? theme.hoverColor 
+                              : (theme.brightness == Brightness.dark 
+                                ? theme.primaryColorLight 
+                                : theme.primaryColorDark),
                             fontSize: 15,
                             fontFamily: 'Klavika',
                           ),
